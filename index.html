@@ -131,6 +131,7 @@
                     </label>
                     <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
                     <div id="status-ocr" class="status-ia"></div>
+                    <div id="resultado-crimes" class="status-ia" style="white-space: pre-wrap; color: #cbd5e1;"></div>
                 </div>
             </div>
 
@@ -460,32 +461,150 @@
             if (jurInput) jurInput.value = valorJur > 0 ? `${formatarNumero(valorJur)}` : '';
         }
 
+
+        // BASE DO CÓDIGO PENAL LONG BEACH 2026 PARA ANÁLISE DA FICHA
+        const baseCrimesLongBeach = [
+            { art: "1", crime: "OCULTAÇÃO DE FACE", pena: 5 },
+            { art: "2", crime: "ATENTADO AO PUDOR / ATO OBSCENO", pena: 30 },
+            { art: "3", crime: "CORRIDAS ILEGAIS", pena: 30 },
+            { art: "4", crime: "PERTURBAÇÃO DA PAZ", pena: 25 },
+            { art: "5", crime: "EXERCÍCIO ILEGAL DA PROFISSÃO", pena: 20 },
+            { art: "6", crime: "FALSIDADE IDEOLÓGICA", pena: 20 },
+            { art: "7", crime: "INCITAÇÃO", pena: 20 },
+            { art: "8", crime: "DÍVIDAS", pena: 40 },
+            { art: "10", crime: "UTILIZAÇÃO DE APARELHOS ELETRÔNICOS NO PRESÍDIO", pena: 20 },
+            { art: "11", crime: "DIFAMAÇÃO", pena: 15 },
+            { art: "13", crime: "CALÚNIA", pena: 20 },
+            { art: "14", crime: "AMEAÇA", pena: 20 },
+            { art: "15", crime: "OMISSÃO DE SOCORRO", pena: 30 },
+            { art: "16", crime: "LATROCÍNIO", pena: 80 },
+            { art: "17", crime: "LESÃO CORPORAL", pena: 20 },
+            { art: "18", crime: "STALKING", pena: 30 },
+            { art: "19", crime: "ABANDONO DE INCAPAZ", pena: 40 },
+            { art: "20", crime: "MAUS TRATOS", pena: 40 },
+            { art: "21", crime: "HOMICÍDIO CULPOSO", pena: 20 },
+            { art: "22", crime: "DENUNCIAÇÃO CALUNIOSA", pena: 30 },
+            { art: "23", crime: "HOMICÍDIO DOLOSO", pena: 30 },
+            { art: "23-A", crime: "ASSASSINATO LEVE", pena: 45 },
+            { art: "23-B", crime: "ASSASSINATO MÉDIO", pena: 55 },
+            { art: "23-C", crime: "ASSASSINATO PESADO", pena: 62 },
+            { art: "24", crime: "HOMICÍDIO QUALIFICADO", pena: 100 },
+            { art: "25", crime: "EXTERMÍNIO/MASSACRE", pena: 80 },
+            { art: "26", crime: "TERRORISMO", pena: 50 },
+            { art: "27", crime: "SEQUESTRO (CÁRCERE PRIVADO)", pena: 50 },
+            { art: "28", crime: "ORGANIZAÇÃO CRIMINOSA", pena: 60 },
+            { art: "29", crime: "TRÁFICO DE DROGAS", pena: 30 },
+            { art: "30", crime: "POSSE DE DROGAS ILEGAIS", pena: 20 },
+            { art: "31", crime: "TRÁFICO DE ARMAS E MUNIÇÕES", pena: 80 },
+            { art: "32", crime: "PORTE ILEGAL DE ARMA DE FOGO LEVE", pena: 10 },
+            { art: "33", crime: "PORTE ILEGAL DE ARMA DE FOGO MÉDIO", pena: 25 },
+            { art: "34", crime: "PORTE ILEGAL DE ARMA DE FOGO PESADO", pena: 35 },
+            { art: "35", crime: "PORTE ILEGAL DE MUNIÇÃO", pena: 30 },
+            { art: "42", crime: "LAVAGEM DE DINHEIRO", pena: 180 },
+            { art: "60", crime: "PLACA CLONADA", pena: 30 },
+            { art: "62", crime: "FURTO", pena: 30 },
+            { art: "63", crime: "ROUBO", pena: 35 },
+            { art: "64", crime: "RECEPTAÇÃO", pena: 20 },
+            { art: "65", crime: "INVASÃO DE PROPRIEDADE", pena: 20 },
+            { art: "87", crime: "PREVARICAÇÃO", pena: 60 },
+            { art: "88", crime: "CONCUSSÃO", pena: 45 },
+            { art: "89", crime: "CORRUPÇÃO PASSIVA", pena: 45 },
+            { art: "90", crime: "CORRUPÇÃO ATIVA / SUBORNO", pena: 50 },
+            { art: "91", crime: "DESACATO À AUTORIDADE", pena: 10 },
+            { art: "92", crime: "DESOBEDIÊNCIA À ORDEM LEGAL / RESISTÊNCIA À PRISÃO", pena: 20 },
+            { art: "93", crime: "TENTATIVA DE FUGA DE ABORDAGEM POLICIAL", pena: 20 },
+            { art: "94", crime: "FUGA DA PRISÃO", pena: 30 },
+            { art: "95", crime: "OBSTRUÇÃO DA JUSTIÇA", pena: 30 },
+            { art: "97", crime: "USURPAÇÃO DE FUNÇÃO PÚBLICA", pena: 35 }
+        ];
+
+        function normalizarTexto(str) {
+            return (str || "")
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[|]/g, " ")
+                .replace(/[^A-Z0-9\s\-\/]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function escaparRegex(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        }
+
+        function contarOcorrencias(texto, termo) {
+            const re = new RegExp(`(^|\\s)${escaparRegex(termo)}($|\\s)`, "g");
+            return (texto.match(re) || []).length;
+        }
+
+        function analisarFichaCriminal(textoOCR) {
+            const textoNormalizado = normalizarTexto(textoOCR);
+            const encontrados = [];
+
+            baseCrimesLongBeach.forEach(item => {
+                const crimeNormalizado = normalizarTexto(item.crime);
+                const artNormalizado = normalizarTexto(item.art);
+
+                const regexArtigo = new RegExp(`\\b(ART\\.?|ARTIGO)?\\s*${escaparRegex(artNormalizado)}\\b`, "g");
+                const qtdPorArtigo = (textoNormalizado.match(regexArtigo) || []).length;
+
+                let qtdPorNome = contarOcorrencias(textoNormalizado, crimeNormalizado);
+
+                // Para crimes com barra, também tenta localizar qualquer uma das partes.
+                if (item.crime.includes("/") && qtdPorNome === 0) {
+                    const partes = item.crime.split("/").map(p => normalizarTexto(p)).filter(p => p.length > 3);
+                    qtdPorNome = Math.max(...partes.map(p => contarOcorrencias(textoNormalizado, p)), 0);
+                }
+
+                const quantidade = Math.max(qtdPorArtigo, qtdPorNome);
+
+                if (quantidade > 0) {
+                    encontrados.push({
+                        ...item,
+                        quantidade,
+                        subtotal: quantidade * item.pena
+                    });
+                }
+            });
+
+            const totalMeses = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
+            return { totalMeses, encontrados };
+        }
+
         function processarImagem(event) {
             const file = event.target.files[0];
             const statusDiv = document.getElementById('status-ocr');
             const nomeArquivo = document.getElementById('nome-arquivo');
-            
+            const resultadoCrimes = document.getElementById('resultado-crimes');
+
             if (!file) return;
             nomeArquivo.innerText = file.name;
-            statusDiv.innerText = "🔄 Analisando captura de ecrã via OCR... Aguarde.";
+            statusDiv.innerText = "🔄 ANALISANDO CAPTURA DE ECRÃ VIA OCR... AGUARDE.";
+            if (resultadoCrimes) resultadoCrimes.innerText = "";
 
             Tesseract.recognize(file, 'por+eng').then(({ data: { text } }) => {
-                const regexMeses = /(\d+)\s*(?:M|m|meses|mes)/g;
-                let totalMeses = 0;
-                let correspondencia;
+                const analise = analisarFichaCriminal(text);
 
-                while ((correspondencia = regexMeses.exec(text)) !== null) {
-                    totalMeses += parseInt(correspondencia[1], 10);
-                }
-
-                statusDiv.innerText = `✅ Sucesso! Total extraído: ${totalMeses}M`;
+                statusDiv.innerText = `✅ ANÁLISE FINALIZADA! TOTAL DETECTADO: ${analise.totalMeses}M`;
 
                 const penaInput = document.getElementById('input-pena_atual');
                 if (penaInput) {
-                    penaInput.value = `${totalMeses}M`;
+                    penaInput.value = `${analise.totalMeses}M`;
+                }
+
+                if (resultadoCrimes) {
+                    if (analise.encontrados.length === 0) {
+                        resultadoCrimes.innerText = "NENHUM CRIME DA BASE FOI IDENTIFICADO COM SEGURANÇA. VERIFIQUE SE A IMAGEM ESTÁ NÍTIDA.";
+                    } else {
+                        resultadoCrimes.innerText = analise.encontrados
+                            .map(item => `${item.quantidade}X - ART. ${item.art} — ${item.crime} = ${item.subtotal}M`)
+                            .join("\n");
+                    }
                 }
             }).catch(err => {
-                statusDiv.innerText = "❌ Falha ao processar a imagem localmente.";
+                statusDiv.innerText = "❌ FALHA AO PROCESSAR A IMAGEM LOCALMENTE.";
+                if (resultadoCrimes) resultadoCrimes.innerText = "";
             });
         }
 
