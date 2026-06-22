@@ -105,6 +105,8 @@ document.addEventListener('input', function(e){
 
         .btn-secundario { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.6rem 0.9rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem; text-transform: uppercase; }
         .btn-secundario:hover { background-color: #475569; }
+        #area-recorte-ficha { margin-top: 1rem; }
+        #preview-ficha { width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #475569; border-radius: 0.5rem; background: #020617; cursor: default; }
         .ajuda-recorte { font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.35; }
 
 
@@ -177,11 +179,14 @@ document.addEventListener('input', function(e){
                     </label>
                     <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
 
+                    <div id="area-recorte-ficha" class="hidden">
+                        <canvas id="preview-ficha"></canvas>
                         <div class="ajuda-recorte">
                             A IA fará a leitura da <b>IMAGEM INTEIRA</b> e considerará apenas linhas que pareçam crimes/artigos da ficha criminal.
                         </div>
                     </div>
 
+                    <div id="texto-ocr-debug" class="status-ia hidden" style="white-space: pre-wrap; color: #64748b; max-height: 180px; overflow: auto; border-top: 1px solid #334155; margin-top: 0.75rem; padding-top: 0.75rem;"></div>
                 </div>
             </div>
 
@@ -1637,6 +1642,8 @@ document.addEventListener('input', function(e){
         async function prepararImagemFicha(event) {
             const file = event.target.files[0];
             const nomeArquivo = document.getElementById('nome-arquivo');
+            const areaRecorte = document.getElementById('area-recorte-ficha');
+            const debugOCR = document.getElementById('texto-ocr-debug');
 
             if (!file) return;
 
@@ -1672,6 +1679,7 @@ document.addEventListener('input', function(e){
         function desenharPreviewFicha() {
             if (!imagemFichaOriginal) return;
 
+            const canvas = document.getElementById("preview-ficha");
             const ctx = canvas.getContext("2d");
 
             const maxW = 900;
@@ -1763,6 +1771,7 @@ document.addEventListener('input', function(e){
         }
 
         async function analisarAreaFichaSelecionada() {
+            const debugOCR = document.getElementById('texto-ocr-debug');
 
             if (!imagemFichaOriginal) {
                 statusDiv.innerText = "❌ ESCOLHA UMA IMAGEM PRIMEIRO.";
