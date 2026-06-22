@@ -462,62 +462,878 @@
         }
 
 
-        // BASE DO CÓDIGO PENAL LONG BEACH 2026 PARA ANÁLISE DA FICHA
-        // MELHORIA: ANALISA ARTIGO, NOME DO CRIME, PALAVRAS-CHAVE, VARIAÇÕES DO OCR E QUANTIDADE DE VEZES COMETIDA.
+        // BASE COMPLETA DO CÓDIGO PENAL LONG BEACH 2026 PARA ANÁLISE DA FICHA
+        // Fonte: PDF "CÓDIGO PENAL DE LONG BEACH 2026" enviado pelo usuário.
+        // Obs.: artigos sem pena em meses, porte cassado ou apenas apreensão/multa foram deixados fora do somatório.
         const baseCrimesLongBeach = [
-            { art: "1", crime: "OCULTAÇÃO DE FACE", pena: 5, palavras: ["OCULTACAO DE FACE", "MASCARA", "ROSTO COBERTO", "FACE COBERTA", "OCULTAR FACE"] },
-            { art: "2", crime: "ATENTADO AO PUDOR / ATO OBSCENO", pena: 30, palavras: ["ATENTADO AO PUDOR", "ATO OBSCENO", "OBSCENO", "PUDOR"] },
-            { art: "3", crime: "CORRIDAS ILEGAIS", pena: 30, palavras: ["CORRIDA ILEGAL", "CORRIDAS ILEGAIS", "RACHA", "RACHAS"] },
-            { art: "4", crime: "PERTURBAÇÃO DA PAZ", pena: 25, palavras: ["PERTURBACAO DA PAZ", "PERTURBAR A PAZ", "PERTURBACAO"] },
-            { art: "5", crime: "EXERCÍCIO ILEGAL DA PROFISSÃO", pena: 20, palavras: ["EXERCICIO ILEGAL", "EXERCICIO ILEGAL DA PROFISSAO", "FALSO MEDICO", "FALSO POLICIAL"] },
-            { art: "6", crime: "FALSIDADE IDEOLÓGICA", pena: 20, palavras: ["FALSIDADE IDEOLOGICA", "IDENTIDADE FALSA", "NOME FALSO"] },
-            { art: "7", crime: "INCITAÇÃO", pena: 20, palavras: ["INCITACAO", "INCITAR", "INCITANDO"] },
-            { art: "8", crime: "DÍVIDAS", pena: 40, palavras: ["DIVIDA", "DIVIDAS", "INADIMPLENCIA"] },
-            { art: "10", crime: "UTILIZAÇÃO DE APARELHOS ELETRÔNICOS NO PRESÍDIO", pena: 20, palavras: ["APARELHO ELETRONICO", "CELULAR NO PRESIDIO", "ELETRONICOS NO PRESIDIO", "TABLET NO PRESIDIO"] },
-            { art: "11", crime: "DIFAMAÇÃO", pena: 15, palavras: ["DIFAMACAO", "DIFAMAR"] },
-            { art: "13", crime: "CALÚNIA", pena: 20, palavras: ["CALUNIA", "CALUNIAR"] },
-            { art: "14", crime: "AMEAÇA", pena: 20, palavras: ["AMEACA", "AMEACAR"] },
-            { art: "15", crime: "OMISSÃO DE SOCORRO", pena: 30, palavras: ["OMISSAO DE SOCORRO", "OMITIU SOCORRO", "NAO PRESTOU SOCORRO"] },
-            { art: "16", crime: "LATROCÍNIO", pena: 80, palavras: ["LATROCINIO", "ROUBO SEGUIDO DE MORTE"] },
-            { art: "17", crime: "LESÃO CORPORAL", pena: 20, palavras: ["LESAO CORPORAL", "AGRESSAO", "AGREDIU"] },
-            { art: "18", crime: "STALKING", pena: 30, palavras: ["STALKING", "PERSEGUICAO", "PERSEGUIR"] },
-            { art: "19", crime: "ABANDONO DE INCAPAZ", pena: 40, palavras: ["ABANDONO DE INCAPAZ", "ABANDONOU INCAPAZ"] },
-            { art: "20", crime: "MAUS TRATOS", pena: 40, palavras: ["MAUS TRATOS", "MAU TRATO", "MALTRATO", "MAL TRATO"] },
-            { art: "21", crime: "HOMICÍDIO CULPOSO", pena: 20, palavras: ["HOMICIDIO CULPOSO"] },
-            { art: "22", crime: "DENUNCIAÇÃO CALUNIOSA", pena: 30, palavras: ["DENUNCIACAO CALUNIOSA", "DENUNCIA FALSA"] },
-            { art: "23", crime: "HOMICÍDIO DOLOSO", pena: 30, palavras: ["HOMICIDIO DOLOSO"] },
-            { art: "23-A", crime: "ASSASSINATO LEVE", pena: 45, palavras: ["ASSASSINATO LEVE", "ASSASSINATO L"] },
-            { art: "23-B", crime: "ASSASSINATO MÉDIO", pena: 55, palavras: ["ASSASSINATO MEDIO", "ASSASSINATO M"] },
-            { art: "23-C", crime: "ASSASSINATO PESADO", pena: 62, palavras: ["ASSASSINATO PESADO", "ASSASSINATO P"] },
-            { art: "24", crime: "HOMICÍDIO QUALIFICADO", pena: 100, palavras: ["HOMICIDIO QUALIFICADO"] },
-            { art: "25", crime: "EXTERMÍNIO/MASSACRE", pena: 80, palavras: ["EXTERMINIO", "MASSACRE"] },
-            { art: "26", crime: "TERRORISMO", pena: 50, palavras: ["TERRORISMO", "TERRORISTA"] },
-            { art: "27", crime: "SEQUESTRO (CÁRCERE PRIVADO)", pena: 50, palavras: ["SEQUESTRO", "CARCERE PRIVADO", "CATIVEIRO"] },
-            { art: "28", crime: "ORGANIZAÇÃO CRIMINOSA", pena: 60, palavras: ["ORGANIZACAO CRIMINOSA", "ORG CRIMINOSA", "FACCAO"] },
-            { art: "29", crime: "TRÁFICO DE DROGAS", pena: 30, palavras: ["TRAFICO DE DROGAS", "TRAFICO", "VENDA DE DROGAS"] },
-            { art: "30", crime: "POSSE DE DROGAS ILEGAIS", pena: 20, palavras: ["POSSE DE DROGAS", "DROGAS ILEGAIS", "PORTE DE DROGAS"] },
-            { art: "31", crime: "TRÁFICO DE ARMAS E MUNIÇÕES", pena: 80, palavras: ["TRAFICO DE ARMAS", "TRAFICO DE MUNICOES", "VENDA DE ARMAS"] },
-            { art: "32", crime: "PORTE ILEGAL DE ARMA DE FOGO LEVE", pena: 10, palavras: ["PORTE ILEGAL DE ARMA LEVE", "ARMA DE FOGO LEVE", "PORTE ARMA LEVE"] },
-            { art: "33", crime: "PORTE ILEGAL DE ARMA DE FOGO MÉDIO", pena: 25, palavras: ["PORTE ILEGAL DE ARMA MEDIO", "PORTE ILEGAL DE ARMA MEDIA", "ARMA DE FOGO MEDIO", "ARMA DE FOGO MEDIA", "PORTE ARMA MEDIA"] },
-            { art: "34", crime: "PORTE ILEGAL DE ARMA DE FOGO PESADO", pena: 35, palavras: ["PORTE ILEGAL DE ARMA PESADO", "PORTE ILEGAL DE ARMA PESADA", "ARMA DE FOGO PESADO", "ARMA DE FOGO PESADA", "PORTE ARMA PESADA"] },
-            { art: "35", crime: "PORTE ILEGAL DE MUNIÇÃO", pena: 30, palavras: ["PORTE ILEGAL DE MUNICAO", "MUNICAO ILEGAL", "POSSE DE MUNICAO"] },
-            { art: "42", crime: "LAVAGEM DE DINHEIRO", pena: 180, palavras: ["LAVAGEM DE DINHEIRO", "DINHEIRO SUJO"] },
-            { art: "60", crime: "PLACA CLONADA", pena: 30, palavras: ["PLACA CLONADA", "CLONAGEM DE PLACA"] },
-            { art: "62", crime: "FURTO", pena: 30, palavras: ["FURTO", "FURTAR"] },
-            { art: "63", crime: "ROUBO", pena: 35, palavras: ["ROUBO", "ROUBAR", "ASSALTO"] },
-            { art: "64", crime: "RECEPTAÇÃO", pena: 20, palavras: ["RECEPTACAO", "RECEPTAR"] },
-            { art: "65", crime: "INVASÃO DE PROPRIEDADE", pena: 20, palavras: ["INVASAO DE PROPRIEDADE", "INVADIR PROPRIEDADE", "INVASAO"] },
-            { art: "87", crime: "PREVARICAÇÃO", pena: 60, palavras: ["PREVARICACAO", "PREVARICAR"] },
-            { art: "88", crime: "CONCUSSÃO", pena: 45, palavras: ["CONCUSSAO"] },
-            { art: "89", crime: "CORRUPÇÃO PASSIVA", pena: 45, palavras: ["CORRUPCAO PASSIVA"] },
-            { art: "90", crime: "CORRUPÇÃO ATIVA / SUBORNO", pena: 50, palavras: ["CORRUPCAO ATIVA", "SUBORNO", "PROPINA"] },
-            { art: "91", crime: "DESACATO À AUTORIDADE", pena: 10, palavras: ["DESACATO", "DESACATO A AUTORIDADE"] },
-            { art: "92", crime: "DESOBEDIÊNCIA À ORDEM LEGAL / RESISTÊNCIA À PRISÃO", pena: 20, palavras: ["DESOBEDIENCIA", "ORDEM LEGAL", "RESISTENCIA A PRISAO", "RESISTENCIA"] },
-            { art: "93", crime: "TENTATIVA DE FUGA DE ABORDAGEM POLICIAL", pena: 20, palavras: ["TENTATIVA DE FUGA", "FUGA DE ABORDAGEM", "FUGA DA ABORDAGEM"] },
-            { art: "94", crime: "FUGA DA PRISÃO", pena: 30, palavras: ["FUGA DA PRISAO", "FUGIU DA PRISAO"] },
-            { art: "95", crime: "OBSTRUÇÃO DA JUSTIÇA", pena: 30, palavras: ["OBSTRUCAO DA JUSTICA", "OBSTRUIR JUSTICA"] },
-            { art: "97", crime: "USURPAÇÃO DE FUNÇÃO PÚBLICA", pena: 35, palavras: ["USURPACAO DE FUNCAO PUBLICA", "USURPACAO", "FUNCAO PUBLICA"] }
-        ];
+            {
+                        "art": "1",
+                        "crime": "OCULTAÇÃO DE FACE",
+                        "pena": 5,
+                        "palavras": [
+                                    "OCULTACAO DE FACE",
+                                    "MASCARA",
+                                    "ROSTO COBERTO",
+                                    "FACE COBERTA",
+                                    "OCULTAR FACE"
+                        ]
+            },
+            {
+                        "art": "2",
+                        "crime": "ATENTADO AO PUDOR / ATO OBSCENO",
+                        "pena": 30,
+                        "palavras": [
+                                    "ATENTADO AO PUDOR",
+                                    "ATO OBSCENO",
+                                    "OBSCENO",
+                                    "PUDOR"
+                        ]
+            },
+            {
+                        "art": "3",
+                        "crime": "CORRIDAS ILEGAIS",
+                        "pena": 30,
+                        "palavras": [
+                                    "CORRIDA ILEGAL",
+                                    "CORRIDAS ILEGAIS",
+                                    "RACHA"
+                        ]
+            },
+            {
+                        "art": "4",
+                        "crime": "PERTURBAÇÃO DA PAZ",
+                        "pena": 25,
+                        "palavras": [
+                                    "PERTURBACAO DA PAZ",
+                                    "PERTURBAR A PAZ",
+                                    "PERTURBACAO"
+                        ]
+            },
+            {
+                        "art": "5",
+                        "crime": "EXERCÍCIO ILEGAL DA PROFISSÃO",
+                        "pena": 20,
+                        "palavras": [
+                                    "EXERCICIO ILEGAL",
+                                    "EXERCICIO ILEGAL DA PROFISSAO"
+                        ]
+            },
+            {
+                        "art": "6",
+                        "crime": "FALSIDADE IDEOLÓGICA",
+                        "pena": 20,
+                        "palavras": [
+                                    "FALSIDADE IDEOLOGICA",
+                                    "IDENTIDADE FALSA"
+                        ]
+            },
+            {
+                        "art": "7",
+                        "crime": "INCITAÇÃO",
+                        "pena": 20,
+                        "palavras": [
+                                    "INCITACAO",
+                                    "INCITAR"
+                        ]
+            },
+            {
+                        "art": "8",
+                        "crime": "DÍVIDAS",
+                        "pena": 40,
+                        "palavras": [
+                                    "DIVIDA",
+                                    "DIVIDAS"
+                        ]
+            },
+            {
+                        "art": "10",
+                        "crime": "UTILIZAÇÃO DE APARELHOS ELETRÔNICOS NO PRESÍDIO DE LONG BEACH",
+                        "pena": 20,
+                        "palavras": [
+                                    "APARELHO ELETRONICO",
+                                    "CELULAR NO PRESIDIO",
+                                    "RADIO NO PRESIDIO",
+                                    "ELETRONICOS NO PRESIDIO"
+                        ]
+            },
+            {
+                        "art": "11",
+                        "crime": "DIFAMAÇÃO",
+                        "pena": 15,
+                        "palavras": [
+                                    "DIFAMACAO",
+                                    "DIFAMAR"
+                        ]
+            },
+            {
+                        "art": "13",
+                        "crime": "CALÚNIA",
+                        "pena": 20,
+                        "palavras": [
+                                    "CALUNIA",
+                                    "CALUNIAR"
+                        ]
+            },
+            {
+                        "art": "14",
+                        "crime": "AMEAÇA",
+                        "pena": 20,
+                        "palavras": [
+                                    "AMEACA",
+                                    "AMEACAR"
+                        ]
+            },
+            {
+                        "art": "15",
+                        "crime": "OMISSÃO DE SOCORRO",
+                        "pena": 30,
+                        "palavras": [
+                                    "OMISSAO DE SOCORRO"
+                        ]
+            },
+            {
+                        "art": "16",
+                        "crime": "LATROCÍNIO",
+                        "pena": 80,
+                        "palavras": [
+                                    "LATROCINIO",
+                                    "ROUBO COM RESULTADO MORTE"
+                        ]
+            },
+            {
+                        "art": "17",
+                        "crime": "LESÃO CORPORAL",
+                        "pena": 20,
+                        "palavras": [
+                                    "LESAO CORPORAL",
+                                    "AGRESSAO"
+                        ]
+            },
+            {
+                        "art": "18",
+                        "crime": "STALKING",
+                        "pena": 30,
+                        "palavras": [
+                                    "STALKING",
+                                    "PERSEGUICAO"
+                        ]
+            },
+            {
+                        "art": "19",
+                        "crime": "ABANDONO DE INCAPAZ",
+                        "pena": 40,
+                        "palavras": [
+                                    "ABANDONO DE INCAPAZ"
+                        ]
+            },
+            {
+                        "art": "20",
+                        "crime": "MAUS TRATOS",
+                        "pena": 40,
+                        "palavras": [
+                                    "MAUS TRATOS",
+                                    "MALTRATO"
+                        ]
+            },
+            {
+                        "art": "21",
+                        "crime": "HOMICÍDIO CULPOSO",
+                        "pena": 20,
+                        "palavras": [
+                                    "HOMICIDIO CULPOSO"
+                        ]
+            },
+            {
+                        "art": "22",
+                        "crime": "DENUNCIAÇÃO CALUNIOSA",
+                        "pena": 30,
+                        "palavras": [
+                                    "DENUNCIACAO CALUNIOSA",
+                                    "DENUNCIA FALSA"
+                        ]
+            },
+            {
+                        "art": "23",
+                        "crime": "HOMICÍDIO DOLOSO",
+                        "pena": 30,
+                        "palavras": [
+                                    "HOMICIDIO DOLOSO"
+                        ]
+            },
+            {
+                        "art": "23-A",
+                        "crime": "ASSASSINATO LEVE",
+                        "pena": 45,
+                        "palavras": [
+                                    "ASSASSINATO LEVE"
+                        ]
+            },
+            {
+                        "art": "23-B",
+                        "crime": "ASSASSINATO MÉDIO",
+                        "pena": 55,
+                        "palavras": [
+                                    "ASSASSINATO MEDIO"
+                        ]
+            },
+            {
+                        "art": "23-C",
+                        "crime": "ASSASSINATO PESADO",
+                        "pena": 62,
+                        "palavras": [
+                                    "ASSASSINATO PESADO"
+                        ]
+            },
+            {
+                        "art": "24",
+                        "crime": "HOMICÍDIO QUALIFICADO",
+                        "pena": 100,
+                        "palavras": [
+                                    "HOMICIDIO QUALIFICADO"
+                        ]
+            },
+            {
+                        "art": "25",
+                        "crime": "EXTERMÍNIO/MASSACRE",
+                        "pena": 80,
+                        "palavras": [
+                                    "EXTERMINIO",
+                                    "MASSACRE"
+                        ]
+            },
+            {
+                        "art": "26",
+                        "crime": "TERRORISMO",
+                        "pena": 50,
+                        "palavras": [
+                                    "TERRORISMO"
+                        ]
+            },
+            {
+                        "art": "27",
+                        "crime": "SEQUESTRO (CÁRCERE PRIVADO)",
+                        "pena": 50,
+                        "palavras": [
+                                    "SEQUESTRO",
+                                    "CARCERE PRIVADO"
+                        ]
+            },
+            {
+                        "art": "28",
+                        "crime": "ORGANIZAÇÃO CRIMINOSA",
+                        "pena": 60,
+                        "palavras": [
+                                    "ORGANIZACAO CRIMINOSA",
+                                    "ORG CRIMINOSA"
+                        ]
+            },
+            {
+                        "art": "29",
+                        "crime": "TRÁFICO DE DROGAS",
+                        "pena": 30,
+                        "palavras": [
+                                    "TRAFICO DE DROGAS",
+                                    "TRAFICO"
+                        ]
+            },
+            {
+                        "art": "30",
+                        "crime": "POSSE DE DROGAS ILEGAIS",
+                        "pena": 20,
+                        "palavras": [
+                                    "POSSE DE DROGAS",
+                                    "DROGAS ILEGAIS"
+                        ]
+            },
+            {
+                        "art": "31",
+                        "crime": "TRÁFICO DE ARMAS E MUNIÇÕES",
+                        "pena": 80,
+                        "palavras": [
+                                    "TRAFICO DE ARMAS",
+                                    "TRAFICO DE MUNICOES"
+                        ]
+            },
+            {
+                        "art": "32",
+                        "crime": "PORTE ILEGAL DE ARMA DE FOGO LEVE",
+                        "pena": 10,
+                        "palavras": [
+                                    "PORTE ILEGAL DE ARMA LEVE",
+                                    "ARMA DE FOGO LEVE",
+                                    "PISTOLA",
+                                    "REVOLVER"
+                        ]
+            },
+            {
+                        "art": "33",
+                        "crime": "PORTE ILEGAL DE ARMA DE FOGO MÉDIO",
+                        "pena": 25,
+                        "palavras": [
+                                    "PORTE ILEGAL DE ARMA MEDIO",
+                                    "ARMA DE FOGO MEDIO",
+                                    "SUBMETRALHADORA",
+                                    "ESCOPETA",
+                                    "TEC NINE"
+                        ]
+            },
+            {
+                        "art": "34",
+                        "crime": "PORTE ILEGAL DE ARMAS DE FOGO PESADO",
+                        "pena": 35,
+                        "palavras": [
+                                    "PORTE ILEGAL DE ARMA PESADO",
+                                    "ARMA DE FOGO PESADO",
+                                    "FUZIL",
+                                    "RIFLE",
+                                    "METRALHADORA"
+                        ]
+            },
+            {
+                        "art": "35",
+                        "crime": "PORTE ILEGAL DE MUNIÇÃO",
+                        "pena": 30,
+                        "palavras": [
+                                    "PORTE ILEGAL DE MUNICAO",
+                                    "MUNICAO ILEGAL"
+                        ]
+            },
+            {
+                        "art": "36",
+                        "crime": "POSSE DE DINHEIRO MARCADO",
+                        "pena": 30,
+                        "palavras": [
+                                    "DINHEIRO MARCADO",
+                                    "DINHEIRO SUJO"
+                        ]
+            },
+            {
+                        "art": "37",
+                        "crime": "EQUIPAMENTO POLICIAL OU BALÍSTICO",
+                        "pena": 30,
+                        "palavras": [
+                                    "EQUIPAMENTO POLICIAL",
+                                    "EQUIPAMENTO BALISTICO",
+                                    "COLETE",
+                                    "TRAJE POLICIAL"
+                        ]
+            },
+            {
+                        "art": "38",
+                        "crime": "ALGEMA",
+                        "pena": 10,
+                        "palavras": [
+                                    "ALGEMA",
+                                    "ALGEMAS"
+                        ]
+            },
+            {
+                        "art": "40",
+                        "crime": "USAR CAPUZ PARA FINS ILEGAIS",
+                        "pena": 25,
+                        "palavras": [
+                                    "CAPUZ",
+                                    "USAR CAPUZ",
+                                    "CAPUZ PARA FINS ILEGAIS"
+                        ]
+            },
+            {
+                        "art": "41",
+                        "crime": "COLDRE",
+                        "pena": 10,
+                        "palavras": [
+                                    "COLDRE"
+                        ]
+            },
+            {
+                        "art": "42",
+                        "crime": "LAVAGEM DE DINHEIRO",
+                        "pena": 180,
+                        "palavras": [
+                                    "LAVAGEM DE DINHEIRO"
+                        ]
+            },
+            {
+                        "art": "43",
+                        "crime": "PÓLVORA",
+                        "pena": 40,
+                        "palavras": [
+                                    "POLVORA"
+                        ]
+            },
+            {
+                        "art": "44",
+                        "crime": "ITENS EXPLOSIVOS E INCENDIÁRIOS (C4 E MOLOTOV)",
+                        "pena": 50,
+                        "palavras": [
+                                    "C4",
+                                    "MOLOTOV",
+                                    "ITENS EXPLOSIVOS",
+                                    "EXPLOSIVO",
+                                    "INCENDIARIO"
+                        ]
+            },
+            {
+                        "art": "53",
+                        "crime": "ATROPELAMENTO CULPOSO",
+                        "pena": 10,
+                        "palavras": [
+                                    "ATROPELAMENTO CULPOSO",
+                                    "ATROPELAMENTO"
+                        ]
+            },
+            {
+                        "art": "53-A",
+                        "crime": "ATROPELAMENTO COLETIVO",
+                        "pena": 20,
+                        "palavras": [
+                                    "ATROPELAMENTO COLETIVO"
+                        ]
+            },
+            {
+                        "art": "56",
+                        "crime": "COLOCAR CIVIS EM RISCO DURANTE O VOO",
+                        "pena": 25,
+                        "palavras": [
+                                    "CIVIS EM RISCO DURANTE O VOO",
+                                    "COLOCAR CIVIS EM RISCO"
+                        ]
+            },
+            {
+                        "art": "57",
+                        "crime": "DESOBEDIÊNCIA À ORDEM AÉREA POLICIAL",
+                        "pena": 30,
+                        "palavras": [
+                                    "DESOBEDIENCIA A ORDEM AEREA",
+                                    "ORDEM AEREA POLICIAL"
+                        ]
+            },
+            {
+                        "art": "57-A",
+                        "crime": "FUGA AÉREA DA POLÍCIA",
+                        "pena": 40,
+                        "palavras": [
+                                    "FUGA AEREA",
+                                    "FUGA AEREA DA POLICIA"
+                        ]
+            },
+            {
+                        "art": "58",
+                        "crime": "USO DE HELICÓPTERO/AERONAVE EM ATIVIDADE CRIMINOSA",
+                        "pena": 40,
+                        "palavras": [
+                                    "HELICOPTERO EM ATIVIDADE CRIMINOSA",
+                                    "AERONAVE EM ATIVIDADE CRIMINOSA"
+                        ]
+            },
+            {
+                        "art": "58-A",
+                        "crime": "TRANSPORTE AÉREO DE CRIMINOSOS OU ITENS ILEGAIS",
+                        "pena": 35,
+                        "palavras": [
+                                    "TRANSPORTE AEREO DE CRIMINOSOS",
+                                    "TRANSPORTE AEREO DE ITENS ILEGAIS"
+                        ]
+            },
+            {
+                        "art": "60",
+                        "crime": "PLACA CLONADA",
+                        "pena": 30,
+                        "palavras": [
+                                    "PLACA CLONADA"
+                        ]
+            },
+            {
+                        "art": "62",
+                        "crime": "FURTO",
+                        "pena": 30,
+                        "palavras": [
+                                    "FURTO",
+                                    "FURTAR"
+                        ]
+            },
+            {
+                        "art": "63",
+                        "crime": "ROUBO",
+                        "pena": 35,
+                        "palavras": [
+                                    "ROUBO",
+                                    "ROUBAR"
+                        ]
+            },
+            {
+                        "art": "63-A",
+                        "crime": "ROUBO DE HELICÓPTERO",
+                        "pena": 30,
+                        "palavras": [
+                                    "ROUBO DE HELICOPTERO"
+                        ]
+            },
+            {
+                        "art": "64",
+                        "crime": "RECEPTAÇÃO",
+                        "pena": 20,
+                        "palavras": [
+                                    "RECEPTACAO",
+                                    "RECEPTAR"
+                        ]
+            },
+            {
+                        "art": "65",
+                        "crime": "INVASÃO DE PROPRIEDADE",
+                        "pena": 20,
+                        "palavras": [
+                                    "INVASAO DE PROPRIEDADE",
+                                    "INVASAO"
+                        ]
+            },
+            {
+                        "art": "66",
+                        "crime": "DESMANCHE DE PEÇAS DE VEÍCULOS FURTADOS",
+                        "pena": 45,
+                        "palavras": [
+                                    "DESMANCHE",
+                                    "PECAS DE VEICULOS FURTADOS",
+                                    "DESMANCHE DE PECAS"
+                        ]
+            },
+            {
+                        "art": "67",
+                        "crime": "ASSALTO À RESIDÊNCIA",
+                        "pena": 20,
+                        "palavras": [
+                                    "ASSALTO A RESIDENCIA",
+                                    "RESIDENCIA"
+                        ]
+            },
+            {
+                        "art": "68",
+                        "crime": "ASSALTO CAIXA/ATM",
+                        "pena": 20,
+                        "palavras": [
+                                    "ASSALTO CAIXA",
+                                    "ASSALTO ATM",
+                                    "CAIXA ATM"
+                        ]
+            },
+            {
+                        "art": "69",
+                        "crime": "ASSALTO À CAIXA RG.",
+                        "pena": 15,
+                        "palavras": [
+                                    "ASSALTO A CAIXA RG",
+                                    "CAIXA RG"
+                        ]
+            },
+            {
+                        "art": "70",
+                        "crime": "ASSALTO A LOJA DE TATUAGEM",
+                        "pena": 25,
+                        "palavras": [
+                                    "ASSALTO A LOJA DE TATUAGEM",
+                                    "LOJA DE TATUAGEM",
+                                    "TATUAGEM"
+                        ]
+            },
+            {
+                        "art": "71",
+                        "crime": "ASSALTO A BARBEARIA",
+                        "pena": 30,
+                        "palavras": [
+                                    "ASSALTO A BARBEARIA",
+                                    "BARBEARIA"
+                        ]
+            },
+            {
+                        "art": "71-B",
+                        "crime": "ASSALTO A BARBEARIA COM REFÉNS",
+                        "pena": 35,
+                        "palavras": [
+                                    "ASSALTO A BARBEARIA COM REFEM",
+                                    "BARBEARIA COM REFEM"
+                        ]
+            },
+            {
+                        "art": "72",
+                        "crime": "ASSALTO À AMMUNITION",
+                        "pena": 30,
+                        "palavras": [
+                                    "ASSALTO A AMMUNITION",
+                                    "AMMUNITION"
+                        ]
+            },
+            {
+                        "art": "73",
+                        "crime": "ASSALTO A LOJA DE BEBIDAS",
+                        "pena": 35,
+                        "palavras": [
+                                    "ASSALTO A LOJA DE BEBIDAS",
+                                    "LOJA DE BEBIDAS"
+                        ]
+            },
+            {
+                        "art": "74",
+                        "crime": "ASSALTO À LOJA DE DEPARTAMENTO",
+                        "pena": 40,
+                        "palavras": [
+                                    "ASSALTO A LOJA DE DEPARTAMENTO",
+                                    "LOJA DE DEPARTAMENTO"
+                        ]
+            },
+            {
+                        "art": "74-A",
+                        "crime": "ASSALTO A LOJA DE DEPARTAMENTOS COM REFÉM",
+                        "pena": 45,
+                        "palavras": [
+                                    "LOJA DE DEPARTAMENTOS COM REFEM",
+                                    "DEPARTAMENTO COM REFEM"
+                        ]
+            },
+            {
+                        "art": "75",
+                        "crime": "ASSALTO AO COMEDY",
+                        "pena": 45,
+                        "palavras": [
+                                    "ASSALTO AO COMEDY",
+                                    "COMEDY"
+                        ]
+            },
+            {
+                        "art": "76",
+                        "crime": "ASSALTO AO MERGULHADOR",
+                        "pena": 50,
+                        "palavras": [
+                                    "ASSALTO AO MERGULHADOR",
+                                    "MERGULHADOR"
+                        ]
+            },
+            {
+                        "art": "77",
+                        "crime": "ASSALTO AO CEMITÉRIO DE AVIÃO",
+                        "pena": 50,
+                        "palavras": [
+                                    "ASSALTO AO CEMITERIO DE AVIAO",
+                                    "CEMITERIO DE AVIAO"
+                        ]
+            },
+            {
+                        "art": "78",
+                        "crime": "ASSALTO A GRAPESEED",
+                        "pena": 50,
+                        "palavras": [
+                                    "ASSALTO A GRAPESEED",
+                                    "GRAPESEED"
+                        ]
+            },
+            {
+                        "art": "79",
+                        "crime": "ASSALTO A SHOPPING KORTS",
+                        "pena": 60,
+                        "palavras": [
+                                    "ASSALTO A SHOPPING KORTS",
+                                    "SHOPPING KORTS"
+                        ]
+            },
+            {
+                        "art": "80",
+                        "crime": "ASSALTO À AÇOUGUE/GALINHEIRO",
+                        "pena": 60,
+                        "palavras": [
+                                    "ASSALTO A ACOUGUE",
+                                    "ASSALTO A GALINHEIRO",
+                                    "ACOUGUE",
+                                    "GALINHEIRO"
+                        ]
+            },
+            {
+                        "art": "81",
+                        "crime": "ASSALTO A JOALHERIA",
+                        "pena": 80,
+                        "palavras": [
+                                    "ASSALTO A JOALHERIA",
+                                    "JOALHERIA"
+                        ]
+            },
+            {
+                        "art": "81-A",
+                        "crime": "ASSALTO A JOALHERIA COM REFÉM",
+                        "pena": 110,
+                        "palavras": [
+                                    "JOALHERIA COM REFEM",
+                                    "ASSALTO A JOALHERIA COM REFEM"
+                        ]
+            },
+            {
+                        "art": "82",
+                        "crime": "ASSALTO A BANCO FLEECA",
+                        "pena": 90,
+                        "palavras": [
+                                    "ASSALTO A BANCO FLEECA",
+                                    "BANCO FLEECA",
+                                    "FLEECA"
+                        ]
+            },
+            {
+                        "art": "82-A",
+                        "crime": "ASSALTO A FLEECA COM REFÉM",
+                        "pena": 120,
+                        "palavras": [
+                                    "FLEECA COM REFEM",
+                                    "BANCO FLEECA COM REFEM"
+                        ]
+            },
+            {
+                        "art": "83",
+                        "crime": "ASSALTO A BANCO DE PALETO",
+                        "pena": 150,
+                        "palavras": [
+                                    "ASSALTO A BANCO DE PALETO",
+                                    "BANCO DE PALETO",
+                                    "PALETO"
+                        ]
+            },
+            {
+                        "art": "83-A",
+                        "crime": "ASSALTO A BANCO DE PALETO COM REFÉM",
+                        "pena": 180,
+                        "palavras": [
+                                    "BANCO DE PALETO COM REFEM",
+                                    "PALETO COM REFEM"
+                        ]
+            },
+            {
+                        "art": "84",
+                        "crime": "ASSALTO AO BANCO CENTRAL",
+                        "pena": 180,
+                        "palavras": [
+                                    "ASSALTO AO BANCO CENTRAL",
+                                    "BANCO CENTRAL"
+                        ]
+            },
+            {
+                        "art": "84-A",
+                        "crime": "ASSALTO AO BANCO CENTRAL COM REFÉM",
+                        "pena": 210,
+                        "palavras": [
+                                    "BANCO CENTRAL COM REFEM"
+                        ]
+            },
+            {
+                        "art": "85",
+                        "crime": "ASSALTO AO PORTA AVIÕES",
+                        "pena": 180,
+                        "palavras": [
+                                    "ASSALTO AO PORTA AVIOES",
+                                    "PORTA AVIOES"
+                        ]
+            },
+            {
+                        "art": "86",
+                        "crime": "ASSALTO AO LABORATÓRIO HUMANE",
+                        "pena": 180,
+                        "palavras": [
+                                    "ASSALTO AO LABORATORIO HUMANE",
+                                    "LABORATORIO HUMANE",
+                                    "HUMANE"
+                        ]
+            },
+            {
+                        "art": "87",
+                        "crime": "PREVARICAÇÃO",
+                        "pena": 60,
+                        "palavras": [
+                                    "PREVARICACAO"
+                        ]
+            },
+            {
+                        "art": "88",
+                        "crime": "CONCUSSÃO",
+                        "pena": 45,
+                        "palavras": [
+                                    "CONCUSSAO"
+                        ]
+            },
+            {
+                        "art": "89",
+                        "crime": "CORRUPÇÃO PASSIVA",
+                        "pena": 45,
+                        "palavras": [
+                                    "CORRUPCAO PASSIVA"
+                        ]
+            },
+            {
+                        "art": "90",
+                        "crime": "CORRUPÇÃO ATIVA / SUBORNO",
+                        "pena": 50,
+                        "palavras": [
+                                    "CORRUPCAO ATIVA",
+                                    "SUBORNO",
+                                    "PROPINA"
+                        ]
+            },
+            {
+                        "art": "91",
+                        "crime": "DESACATO À AUTORIDADE",
+                        "pena": 10,
+                        "palavras": [
+                                    "DESACATO",
+                                    "DESACATO A AUTORIDADE"
+                        ]
+            },
+            {
+                        "art": "92",
+                        "crime": "DESOBEDIÊNCIA À ORDEM LEGAL / RESISTÊNCIA A PRISÃO",
+                        "pena": 20,
+                        "palavras": [
+                                    "DESOBEDIENCIA A ORDEM LEGAL",
+                                    "RESISTENCIA A PRISAO",
+                                    "RESISTENCIA"
+                        ]
+            },
+            {
+                        "art": "93",
+                        "crime": "TENTATIVA DE FUGA DE ABORDAGEM POLICIAL",
+                        "pena": 20,
+                        "palavras": [
+                                    "TENTATIVA DE FUGA",
+                                    "FUGA DE ABORDAGEM"
+                        ]
+            },
+            {
+                        "art": "94",
+                        "crime": "FUGA DA PRISÃO",
+                        "pena": 30,
+                        "palavras": [
+                                    "FUGA DA PRISAO"
+                        ]
+            },
+            {
+                        "art": "95",
+                        "crime": "OBSTRUÇÃO DA JUSTIÇA",
+                        "pena": 30,
+                        "palavras": [
+                                    "OBSTRUCAO DA JUSTICA"
+                        ]
+            },
+            {
+                        "art": "96",
+                        "crime": "MULTAS PENDENTES",
+                        "pena": 30,
+                        "palavras": [
+                                    "MULTAS PENDENTES",
+                                    "MULTA PENDENTE"
+                        ]
+            },
+            {
+                        "art": "97",
+                        "crime": "USURPAÇÃO DE FUNÇÃO PÚBLICA",
+                        "pena": 35,
+                        "palavras": [
+                                    "USURPACAO DE FUNCAO PUBLICA",
+                                    "USURPACAO"
+                        ]
+            }
+];
 
         function normalizarTexto(str) {
             return (str || "")
@@ -525,6 +1341,7 @@
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[|()[\]{}:;,.]/g, " ")
+                .replace(/\s*-\s*/g, "-")
                 .replace(/[^A-Z0-9\s\-\/]/g, " ")
                 .replace(/\s+/g, " ")
                 .trim();
@@ -534,24 +1351,47 @@
             return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         }
 
+        function artigoFlexivel(art) {
+            const a = normalizarTexto(art).replace(/\s+/g, "");
+            if (a.includes("-")) {
+                const [num, letra] = a.split("-");
+                return `${escaparRegex(num)}\s*-?\s*${escaparRegex(letra)}`;
+            }
+            return escaparRegex(a);
+        }
+
         function montarPadroesCrime(item) {
             const termos = new Set([item.crime, ...(item.palavras || [])]);
             item.crime.split("/").forEach(p => termos.add(p));
-            const normalizados = Array.from(termos)
+            return Array.from(termos)
                 .map(normalizarTexto)
-                .filter(t => t.length >= 4)
+                .filter(t => t.length >= 3)
                 .sort((a, b) => b.length - a.length);
-            return normalizados;
+        }
+
+        function calcularSimilaridade(a, b) {
+            const wa = new Set(normalizarTexto(a).split(" ").filter(w => w.length > 2));
+            const wb = new Set(normalizarTexto(b).split(" ").filter(w => w.length > 2));
+            if (!wa.size || !wb.size) return 0;
+            let inter = 0;
+            wa.forEach(w => { if (wb.has(w)) inter++; });
+            return inter / Math.max(wa.size, wb.size);
+        }
+
+        function dividirLinhasOCR(textoOCR) {
+            return (textoOCR || "")
+                .split(/\n|<br>|•|;/gi)
+                .map(normalizarTexto)
+                .filter(l => l.length > 0);
         }
 
         function extrairQuantidadeDaLinha(linha, termo, art) {
-            // Procura quantidade próxima da linha: "2x ROUBO", "ROUBO x2", "ROUBO 2", "QTD 2", "2 ROUBO"
             const termoEsc = escaparRegex(termo);
-            const artEsc = escaparRegex(normalizarTexto(art));
+            const artEsc = artigoFlexivel(art);
 
             const padroes = [
-                new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*(?:ART\\.?\\s*)?${artEsc}(?:\\s|$)`),
-                new RegExp(`(?:ART\\.?\\s*)?${artEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
+                new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*(?:ART\\.?|ARTIGO)?\\s*${artEsc}(?:\\s|$)`),
+                new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
                 new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*${termoEsc}(?:\\s|$)`),
                 new RegExp(`${termoEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`)
             ];
@@ -564,23 +1404,6 @@
                 }
             }
             return 1;
-        }
-
-        function dividirLinhasOCR(textoOCR) {
-            return (textoOCR || "")
-                .split(/\n|<br>|•|;/gi)
-                .map(normalizarTexto)
-                .filter(l => l.length > 0);
-        }
-
-        function calcularSimilaridade(a, b) {
-            // Similaridade simples por palavras em comum para ajudar quando o OCR falhar um pouco.
-            const wa = new Set(normalizarTexto(a).split(" ").filter(w => w.length > 2));
-            const wb = new Set(normalizarTexto(b).split(" ").filter(w => w.length > 2));
-            if (!wa.size || !wb.size) return 0;
-            let inter = 0;
-            wa.forEach(w => { if (wb.has(w)) inter++; });
-            return inter / Math.max(wa.size, wb.size);
         }
 
         function analisarFichaCriminal(textoOCR) {
@@ -597,23 +1420,18 @@
                 encontradosMap.set(chave, atual);
             }
 
-            // 1) Busca por linha, com quantidade próxima ao crime.
             linhas.forEach(linha => {
                 baseCrimesLongBeach.forEach(item => {
                     const termos = montarPadroesCrime(item);
-                    const art = normalizarTexto(item.art);
-
                     let achou = false;
                     let termoAchado = "";
 
-                    // Artigo explícito: ART. 63, ARTIGO 63, 63 - ROUBO.
-                    const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${escaparRegex(art)}\\b`);
+                    const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artigoFlexivel(item.art)}\\b`);
                     if (reArt.test(linha)) {
                         achou = true;
-                        termoAchado = art;
+                        termoAchado = normalizarTexto(item.art);
                     }
 
-                    // Nome/palavra-chave.
                     if (!achou) {
                         for (const termo of termos) {
                             if (linha.includes(termo)) {
@@ -624,7 +1442,6 @@
                         }
                     }
 
-                    // Similaridade para OCR imperfeito, somente se a linha for parecida.
                     if (!achou) {
                         const melhor = termos.map(t => ({ termo: t, score: calcularSimilaridade(linha, t) }))
                                             .sort((a, b) => b.score - a.score)[0];
@@ -635,22 +1452,27 @@
                     }
 
                     if (achou) {
-                        const qtd = extrairQuantidadeDaLinha(linha, termoAchado, art);
-                        adicionar(item, qtd, termoAchado === art ? 0.95 : 0.85, linha);
+                        const qtd = extrairQuantidadeDaLinha(linha, termoAchado, item.art);
+                        adicionar(item, qtd, termoAchado === normalizarTexto(item.art) ? 0.95 : 0.85, linha);
                     }
                 });
             });
 
-            // 2) Busca geral no texto para crimes que apareceram fora de linhas organizadas.
             baseCrimesLongBeach.forEach(item => {
                 if (encontradosMap.has(item.art)) return;
-
                 const termos = montarPadroesCrime(item);
+                const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artigoFlexivel(item.art)}\\b`, "g");
+                const artMatches = textoCompleto.match(reArt);
+                if (artMatches && artMatches.length > 0) {
+                    adicionar(item, artMatches.length, 0.80, `ARTIGO LOCALIZADO NO TEXTO: ${item.art}`);
+                    return;
+                }
+
                 for (const termo of termos) {
                     const re = new RegExp(`(^|\\s)${escaparRegex(termo)}($|\\s)`, "g");
                     const matches = textoCompleto.match(re);
                     if (matches && matches.length > 0) {
-                        adicionar(item, matches.length, 0.75, `LOCALIZADO NO TEXTO: ${termo}`);
+                        adicionar(item, matches.length, 0.75, `CRIME LOCALIZADO NO TEXTO: ${termo}`);
                         break;
                     }
                 }
@@ -662,9 +1484,16 @@
                     subtotal: item.quantidade * item.pena,
                     confiancaTexto: item.confianca >= 0.90 ? "ALTA" : item.confianca >= 0.80 ? "MÉDIA" : "BAIXA"
                 }))
-                .sort((a, b) => Number(String(a.art).replace(/\D/g, "")) - Number(String(b.art).replace(/\D/g, "")));
+                .sort((a, b) => {
+                    const na = parseInt(String(a.art).match(/\d+/)?.[0] || "0", 10);
+                    const nb = parseInt(String(b.art).match(/\d+/)?.[0] || "0", 10);
+                    if (na !== nb) return na - nb;
+                    return String(a.art).localeCompare(String(b.art));
+                });
 
-            const totalMeses = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
+            let totalMeses = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
+            if (totalMeses > 800) totalMeses = 800; // limite máximo previsto no código penal.
+
             return { totalMeses, encontrados };
         }
 
