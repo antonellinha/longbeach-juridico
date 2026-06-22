@@ -413,20 +413,21 @@
             "4": [
                 { type: 'seccao', label: 'Dados da Empresa' },
                 { id: 'empresa', label: 'Empresa', placeholder: 'Nome da Empresa' },
-                { id: 'solicitacao', label: 'Solicitação', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO', 'AUMENTO DE FUNCIONARIOS'] },
+                { id: 'solicitacao', label: 'Solicitação', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO'] },
                 { id: 'num_func', label: 'Número de Funcionários', placeholder: 'Empresas 20 | Restaurante 15' },
+                { id: 'tipo_empresa', label: 'Tipo de Empresa', type: 'select', options: ['Restaurante', 'Empresas', 'Restaurante +5', 'Empresa +5'] },
                 { id: 'descricao', label: 'Descrição da Empresa', placeholder: 'Atividades comerciais' },
-                { type: 'seccao', label: 'Sócio 1' },
+                { type: 'seccao', id: 'secao-socio1', label: 'Sócio 1' },
                 { id: 'socio1', label: 'Sócio 01', placeholder: 'Nome Completo' },
                 { id: 'id_socio1', label: 'Passaporte Sócio 01', placeholder: 'ID' },
                 { id: 'tel_socio1', label: 'Telefone Sócio 01', placeholder: 'Telefone' },
-                { type: 'seccao', label: 'Sócio 2' },
+                { type: 'seccao', id: 'secao-socio2', label: 'Sócio 2' },
                 { id: 'socio2', label: 'Sócio 02', placeholder: 'Nome Completo' },
                 { id: 'id_socio2', label: 'Passaporte Sócio 02', placeholder: 'ID' },
                 { id: 'tel_socio2', label: 'Telefone Sócio 02', placeholder: 'Telefone' },
                 { type: 'seccao', label: 'Vigência e Faturação' },
-                { id: 'mes_vigente', label: 'Mês Vigente', placeholder: 'Mês vigente', valorFixo: 'Junho/2026' },
-                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'mes_vigente', label: 'Mês Vigente', type: 'select', options: ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'] },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
                 { id: 'valor_jur', label: 'Valor Jurídico', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
                 { id: 'valor_adv', label: 'Valor Advogado', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
             ],
@@ -504,6 +505,19 @@
             "6": "PORTE DE ARMA"
         };
 
+        function obterMesAtualNome() {
+            const meses = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+            return meses[new Date().getMonth()];
+        }
+
+        function obterDataAtualBR() {
+            const hoje = new Date();
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const ano = hoje.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        }
+
         function alternarCampos() {
             const escolha = document.getElementById('select-template').value;
             const container = document.getElementById('campos-dinamicos');
@@ -513,7 +527,7 @@
                 if (campo.type === 'seccao') {
                     const divisor = document.createElement('div');
                     divisor.className = 'seccao-divisor';
-                    divisor.id = `seccao-${campo.label.replace(/\s+/g, '-').toLowerCase()}`;
+                    divisor.id = campo.id || `seccao-${campo.label.replace(/\s+/g, '-').toLowerCase()}`;
                     const h3 = document.createElement('h3');
                     h3.innerText = campo.label;
                     divisor.appendChild(h3);
@@ -540,6 +554,10 @@
                     }
                     if (campo.id === 'faixa_limpeza') {
                         input.onchange = calcularValorLimpeza;
+                    }
+                    if (campo.id === 'solicitacao' || campo.id === 'tipo_empresa') {
+                        input.onchange = () => { atualizarCamposCNPJ(); atualizarCamposCNPJ();
+            atualizarValorCNPJ(); };
                     }
 
                     campo.options.forEach(opt => {
@@ -585,6 +603,10 @@
                     input.id = `input-${campo.id}`;
                     input.placeholder = campo.placeholder;
                     input.value = campo.valorFixo || '';
+
+                    if (campo.id.toLowerCase().includes('data')) {
+                        input.value = obterDataAtualBR();
+                    }
 
                     if (campo.id.includes('id')) {
                         input.inputMode = 'numeric';
@@ -645,6 +667,13 @@
             if (escolha === "1" || escolha === "5" || escolha === "6") {
                 calcularValorLimpeza();
             }
+
+            
+            if (escolha === "4") {
+                atualizarCamposCNPJ();
+                atualizarValorCNPJ();
+            }
+
 
             setTimeout(gerarTemplate, 0);
         }
@@ -715,6 +744,70 @@
         }
 
         // Eventos para recalcular divisões financeiras ao introduzir valores
+        function atualizarCamposCNPJ() {
+            const escolha = document.getElementById('select-template').value;
+            if (escolha !== "4") return;
+
+            const solicitacao = document.getElementById('input-solicitacao')?.value;
+            const esconderSocios = solicitacao === 'RENOVAÇÃO';
+
+            const secoesSocios = ['secao-socio1', 'secao-socio2'];
+            const camposSocios = [
+                'socio1','id_socio1','tel_socio1',
+                'socio2','id_socio2','tel_socio2'
+            ];
+
+            [...secoesSocios, ...camposSocios.map(id => `container-${id}`)].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (esconderSocios) {
+                    el.classList.add('hidden');
+                } else {
+                    el.classList.remove('hidden');
+                }
+            });
+
+            const campoMes = document.getElementById('input-mes_vigente');
+            if (campoMes && !campoMes.value) {
+                campoMes.value = obterMesAtualNome();
+            }
+        }
+
+        function atualizarValorCNPJ() {
+            const escolha = document.getElementById('select-template').value;
+            if (escolha !== "4") return;
+
+            const solicitacao = document.getElementById('input-solicitacao')?.value;
+            const tipoEmpresa = document.getElementById('input-tipo_empresa')?.value;
+            const valorInput = document.getElementById('input-valor');
+
+            if (!solicitacao || !tipoEmpresa || !valorInput) return;
+
+            const tabela = {
+                "ABERTURA": {
+                    "Restaurante": 100000,
+                    "Empresas": 120000,
+                    "Restaurante +5": 200000,
+                    "Empresa +5": 220000
+                },
+                "RENOVAÇÃO": {
+                    "Restaurante": 80000,
+                    "Empresas": 100000,
+                    "Restaurante +5": 150000,
+                    "Empresa +5": 170000
+                }
+            };
+
+            const valor = tabela[solicitacao]?.[tipoEmpresa] || 0;
+            valorInput.value = valor > 0 ? valor.toLocaleString('pt-BR') : '';
+
+            calcularValores();
+
+            if (document.getElementById('output-template')) {
+                setTimeout(gerarTemplate, 0);
+            }
+        }
+
         function calcularValores() {
             const escolha = document.getElementById('select-template').value;
             const valorInput = document.getElementById('input-valor');
@@ -831,7 +924,7 @@
 `;
 
             if (escolha === "1") {
-                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                resultado += `[REQUERIMENTO][${pegarValor('solicitacao') === 'ABERTURA' ? 'ABERTURA CNPJ' : (pegarValor('solicitacao') === 'RENOVAÇÃO' ? 'RENOVAÇÃO CNPJ' : nomeReqAutomatico)}]\n\n` +
                              `[NOME ATUAL][${pegarValor('nome_atual')}]\n` +
                              `[NOME RETIFICADO][${pegarValor('nome_retificado')}]\n` +
                              `[PASSAPORTE DO REQUERENTE][${pegarValor('id_req')}]\n` +
@@ -902,18 +995,25 @@
                              `[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
             }
             else if (escolha === "4") {
-                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                const nomeReqCNPJ = pegarValor('solicitacao') === 'ABERTURA' ? 'ABERTURA CNPJ' : 'RENOVAÇÃO CNPJ';
+
+                resultado += `[REQUERIMENTO][${nomeReqCNPJ}]\n\n` +
                              `[EMPRESA][${pegarValor('empresa')}]\n` +
                              `[SOLICITAÇÃO][${pegarValor('solicitacao')}]\n` +
                              `[NÚMERO DE FUNCIONÁRIOS][${pegarValor('num_func')}]\n` +
-                             `[DESCRIÇÃO DA EMPRESA][${pegarValor('descricao')}]\n\n` +
-                             `[SÓCIO 01][${pegarValor('socio1')}]\n` +
-                             `[PASSAPORTE SÓCIO 01][${pegarValor('id_socio1')}]\n` +
-                             `[TELEFONE SÓCIO 01][${pegarValor('tel_socio1')}]\n\n` +
-                             `[SÓCIO 02][${pegarValor('socio2')}]\n` +
-                             `[PASSAPORTE SÓCIO 02][${pegarValor('id_socio2')}]\n` +
-                             `[TELEFONE SÓCIO 02][${pegarValor('tel_socio2')}]\n\n` +
-                             `[MÊS VIGENTE][${pegarValor('mes_vigente')}]\n` +
+                             `[TIPO DE EMPRESA][${pegarValor('tipo_empresa')}]\n` +
+                             `[DESCRIÇÃO DA EMPRESA][${pegarValor('descricao')}]\n\n`;
+
+                if (pegarValor('solicitacao') !== "RENOVAÇÃO") {
+                    resultado += `[SÓCIO 01][${pegarValor('socio1')}]\n` +
+                                 `[PASSAPORTE SÓCIO 01][${pegarValor('id_socio1')}]\n` +
+                                 `[TELEFONE SÓCIO 01][${pegarValor('tel_socio1')}]\n\n` +
+                                 `[SÓCIO 02][${pegarValor('socio2')}]\n` +
+                                 `[PASSAPORTE SÓCIO 02][${pegarValor('id_socio2')}]\n` +
+                                 `[TELEFONE SÓCIO 02][${pegarValor('tel_socio2')}]\n\n`;
+                }
+
+                resultado += `[MÊS VIGENTE][${pegarValor('mes_vigente')}]\n` +
                              `[VALOR TOTAL][${pegarValor('valor')}]\n` +
                              `[VALOR JURIDICO][${pegarValor('valor_jur')}]\n` +
                              `[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
@@ -1026,12 +1126,14 @@
 
         // Gerar preview ao vivo conforme os campos são alterados
         document.getElementById('campos-dinamicos').addEventListener('input', () => {
+            atualizarValorCNPJ();
             calcularValores();
             calcularValorLimpeza();
             gerarTemplate();
         });
 
         document.getElementById('campos-dinamicos').addEventListener('change', () => {
+            atualizarValorCNPJ();
             calcularValores();
             calcularValorLimpeza();
             handleFichaLimpaChange();
