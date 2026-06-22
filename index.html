@@ -277,11 +277,12 @@
                         <select id="select-template" onchange="alternarCampos()">
                             <option value="1">1. Troca de Nome</option>
                             <option value="2_adocao">2. Adoção</option>
-                            <option value="2_nascimento">2. Nascimento</option>
-                            <option value="3">3. Casamento</option>
-                            <option value="4">4. CNPJ (Abertura/Renovação)</option>
-                            <option value="5">5. Limpeza de Ficha</option>
-                            <option value="6">6. Porte de Arma</option>
+                            <option value="2_nascimento">3. Nascimento</option>
+                            <option value="3">4. Casamento</option>
+                            <option value="7">5. Divórcio</option>
+                            <option value="4">6. CNPJ (Abertura/Renovação)</option>
+                            <option value="5">7. Limpeza de Ficha</option>
+                            <option value="6">8. Porte de Arma</option>
                         </select>
                     </div>
                 </div>
@@ -332,19 +333,22 @@
                 { id: 'sexo_requerente', label: 'Sexo do Requerente', type: 'select', options: ['MASCULINO', 'FEMININO', 'NÃO BINÁRIO'] },
 
                 { type: 'seccao', label: 'Honorários' },
-                { id: 'valor_troca_nome', label: 'Honorários da Troca de Nome', placeholder: 'Valor fixo', valorFixo: '65.000', readonly: true },
+                { id: 'valor_troca_nome', label: 'Honorários da Troca de Nome', placeholder: 'Valor fixo', valorFixo: '$65.000', readonly: true },
 
                 { type: 'seccao', label: 'Saneamento Judicial' },
                 { id: 'ficha_limpa', label: 'Possui Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
                 { id: 'faixa_limpeza', label: 'Tempo Preso', type: 'select', options: ['≤ 150 meses preso', '≥ 300 meses preso', '≥ 500 meses preso'], dynamicHide: true },
-                { id: 'valor_limpeza', label: 'Valor da Limpeza', placeholder: 'Auto-calculado', valorFixo: '50.000', readonly: true, dynamicHide: true },
+                { id: 'valor_limpeza', label: 'Valor da Limpeza', placeholder: 'Auto-calculado', valorFixo: '$50.000', readonly: true, dynamicHide: true },
                 { id: 'valor_adv_limpeza', label: 'Valor Advogado Limpeza (70%)', placeholder: 'Auto-calculado', valorFixo: '35.000', readonly: true, dynamicHide: true },
                 { id: 'valor_jur_limpeza', label: 'Valor Jurídico Limpeza (30%)', placeholder: 'Auto-calculado', valorFixo: '15.000', readonly: true, dynamicHide: true },
-                { id: 'total_adv_processo', label: 'Total Advogado no Processo', placeholder: 'Auto-calculado', valorFixo: '65.000', readonly: true, dynamicHide: true },
+                { id: 'total_adv_processo', label: 'Total Advogado no Processo', placeholder: 'Auto-calculado', valorFixo: '$65.000', readonly: true, dynamicHide: true },
                 { id: 'total_jur_processo', label: 'Total Jurídico no Processo', placeholder: 'Auto-calculado', valorFixo: '0', readonly: true, dynamicHide: true },
 
                 { type: 'seccao', label: 'Informações Adicionais' },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+
+                { type: 'seccao', label: 'Valores' },
+                { id: 'valor', label: 'Valor Total (100% Advogado)', placeholder: '$65.000', valorFixo: '$65.000', readonly: true },
                 { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
             ],
             "2_adocao": [
@@ -361,9 +365,9 @@
                 { id: 'id_pai_mae_2', label: 'Passaporte Responsável 2', placeholder: 'ID' },
                 { type: 'seccao', label: 'Valores e Datas' },
                 { id: 'data_adocao', label: 'Data Adoção (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
-                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
-                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Auto-calculado', valorFixo: '$150.000', readonly: true },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '$75.000', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '$75.000', readonly: true },
                 { id: 'data_req', label: 'Data Requerimento', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' }
             ],
             "2_nascimento": [
@@ -384,9 +388,9 @@
                 { id: 'id_medico', label: 'Passaporte Médico', placeholder: 'ID' },
                 { type: 'seccao', label: 'Valores e Datas' },
                 { id: 'data_nasc', label: 'Data de Nascimento (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
-                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
-                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+                { id: 'valor', label: 'Valor Total', placeholder: 'Auto-calculado', valorFixo: '$150.000', readonly: true },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '$75.000', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '$75.000', readonly: true }
             ],
             "3": [
                 { type: 'seccao', label: 'Cônjuge 1' },
@@ -406,9 +410,9 @@
                 { id: 'c2_nome_ret', label: 'Nome Retificado Cônjuge 2', placeholder: 'Nome após casamento' },
                 { id: 'c2_id_ret', label: 'Passaporte Cônjuge 2 Retificado', placeholder: 'ID' },
                 { type: 'seccao', label: 'Valores' },
-                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
-                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+                { id: 'valor', label: 'Valor Total', placeholder: 'Auto-calculado', valorFixo: '$150.000', readonly: true },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '$75.000', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '$75.000', readonly: true }
             ],
             "4": [
                 { type: 'seccao', label: 'Dados da Empresa' },
@@ -453,7 +457,7 @@
                     id: 'valor_limpeza', 
                     label: 'Valor da Limpeza', 
                     placeholder: 'Auto-calculado', 
-                    valorFixo: '50.000', 
+                    valorFixo: '$50.000', 
                     readonly: true 
                 },
                 { 
@@ -484,14 +488,45 @@
                 { type: 'seccao', label: 'Análise de Aptidão' },
                 { id: 'ficha_limpa', label: 'Há Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
                 { id: 'faixa_limpeza', label: 'Tempo Preso', type: 'select', options: ['≤ 150 meses preso', '≥ 300 meses preso', '≥ 500 meses preso'], dynamicHide: true },
-                { id: 'valor_limpeza', label: 'Valor da Limpeza', placeholder: 'Auto-calculado', valorFixo: '50.000', readonly: true, dynamicHide: true },
+                { id: 'valor_limpeza', label: 'Valor da Limpeza', placeholder: 'Auto-calculado', valorFixo: '$50.000', readonly: true, dynamicHide: true },
                 { id: 'valor_adv_limpeza', label: 'Valor Advogado Limpeza (70%)', placeholder: 'Auto-calculado', valorFixo: '35.000', readonly: true, dynamicHide: true },
                 { id: 'valor_jur_limpeza', label: 'Valor Jurídico Limpeza (30%)', placeholder: 'Auto-calculado', valorFixo: '15.000', readonly: true, dynamicHide: true },
 
                 { id: 'armamento', label: 'Armamento', type: 'select', options: ['M911', 'Mossberg 590', 'Steyr AUG'] },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+
+                { type: 'seccao', label: 'Valores' },
+                { id: 'valor', label: 'Valor Total (100% Advogado)', placeholder: '$65.000', valorFixo: '$65.000', readonly: true },
                 { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
-            ]
+            ],
+            "7": [
+                { type: 'seccao', label: 'Tipo de Divórcio' },
+                { id: 'tipo_divorcio', label: 'Tipo de Divórcio', type: 'select', options: ['Amigável', 'Litigioso'] },
+
+                { type: 'seccao', id: 'secao-divorcio-amigavel', label: 'Dados do Divórcio Amigável' },
+                { id: 'div_nome_req1', label: 'Nome Requerente 1', placeholder: 'Nome Completo' },
+                { id: 'div_id_req1', label: 'Passaporte Requerente 1', placeholder: 'ID' },
+                { id: 'div_tel_req1', label: 'Telefone Requerente 1', placeholder: 'XXX-XXX' },
+                { id: 'div_nome_ret1', label: 'Nome Retificado Requerente 1', placeholder: 'Nome Retificado' },
+                { id: 'div_nome_req2', label: 'Nome Requerente 2', placeholder: 'Nome Completo' },
+                { id: 'div_id_req2', label: 'Passaporte Requerente 2', placeholder: 'ID' },
+                { id: 'div_tel_req2', label: 'Telefone Requerente 2', placeholder: 'XXX-XXX' },
+                { id: 'div_nome_ret2', label: 'Nome Retificado Requerente 2', placeholder: 'Nome Retificado' },
+                { id: 'data_separacao', label: 'Data Separação', placeholder: 'XX/XX/20XX' },
+
+                { type: 'seccao', id: 'secao-divorcio-litigioso', label: 'Dados do Divórcio Litigioso' },
+                { id: 'div_nome_req', label: 'Nome Requerente', placeholder: 'Nome Completo' },
+                { id: 'div_id_req', label: 'Passaporte Requerente', placeholder: 'ID' },
+                { id: 'div_tel_req', label: 'Telefone Requerente', placeholder: 'XXX-XXX' },
+                { id: 'div_nome_ret', label: 'Nome Retificado', placeholder: 'Nome Retificado' },
+                { id: 'div_motivo', label: 'Motivo (Caso Requerente Informe)', placeholder: 'XXXXX/SE HOUVER' },
+
+                { type: 'seccao', label: 'Valores e Datas' },
+                { id: 'valor', label: 'Valor Total', placeholder: '$50.000', valorFixo: '$50.000', readonly: true },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: '$25.000', valorFixo: '$25.000', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: '$25.000', valorFixo: '$25.000', readonly: true },
+                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX' }
+            ],
 
         };
 
@@ -502,12 +537,17 @@
             "3": "CASAMENTO",
             "4": "ABERTURA, RENOVAÇÃO E AUMENTO DE FUNCIONÁRIOS DE CNPJ'S",
             "5": "LIMPEZA DE FICHA",
-            "6": "PORTE DE ARMA"
+            "6": "PORTE DE ARMA",
+            "7": "DIVÓRCIO"
         };
 
         function obterMesAtualNome() {
             const meses = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
             return meses[new Date().getMonth()];
+        }
+
+        function formatarDolar(num) {
+            return '$' + Number(num || 0).toLocaleString('pt-BR');
         }
 
         function obterDataAtualBR() {
@@ -555,9 +595,11 @@
                     if (campo.id === 'faixa_limpeza') {
                         input.onchange = calcularValorLimpeza;
                     }
+                    if (campo.id === 'tipo_divorcio') {
+                        input.onchange = atualizarCamposDivorcio;
+                    }
                     if (campo.id === 'solicitacao' || campo.id === 'tipo_empresa') {
-                        input.onchange = () => { atualizarCamposCNPJ(); atualizarCamposCNPJ();
-            atualizarValorCNPJ(); };
+                        input.onchange = () => { atualizarCamposCNPJ(); atualizarValorCNPJ(); };
                     }
 
                     campo.options.forEach(opt => {
@@ -673,6 +715,10 @@
                 atualizarCamposCNPJ();
                 atualizarValorCNPJ();
             }
+            if (escolha === "7") {
+                atualizarCamposDivorcio();
+            }
+
 
 
             setTimeout(gerarTemplate, 0);
@@ -744,7 +790,7 @@
         }
 
         // Eventos para recalcular divisões financeiras ao introduzir valores
-        function atualizarCamposCNPJ() {
+function atualizarCamposCNPJ() {
             const escolha = document.getElementById('select-template').value;
             if (escolha !== "4") return;
 
@@ -799,7 +845,53 @@
             };
 
             const valor = tabela[solicitacao]?.[tipoEmpresa] || 0;
-            valorInput.value = valor > 0 ? valor.toLocaleString('pt-BR') : '';
+            valorInput.value = valor > 0 ? formatarDolar(valor) : '';
+
+            calcularValores();
+
+            if (document.getElementById('output-template')) {
+                setTimeout(gerarTemplate, 0);
+            }
+        }
+
+        function atualizarCamposDivorcio() {
+            const escolha = document.getElementById('select-template').value;
+            if (escolha !== "7") return;
+
+            const tipo = document.getElementById('input-tipo_divorcio')?.value || 'Amigável';
+            const amigavel = tipo === 'Amigável';
+
+            const idsAmigavel = [
+                'secao-divorcio-amigavel',
+                'container-div_nome_req1',
+                'container-div_id_req1',
+                'container-div_tel_req1',
+                'container-div_nome_ret1',
+                'container-div_nome_req2',
+                'container-div_id_req2',
+                'container-div_tel_req2',
+                'container-div_nome_ret2',
+                'container-data_separacao'
+            ];
+
+            const idsLitigioso = [
+                'secao-divorcio-litigioso',
+                'container-div_nome_req',
+                'container-div_id_req',
+                'container-div_tel_req',
+                'container-div_nome_ret',
+                'container-div_motivo'
+            ];
+
+            idsAmigavel.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', !amigavel);
+            });
+
+            idsLitigioso.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', amigavel);
+            });
 
             calcularValores();
 
@@ -836,7 +928,7 @@
             const valorJur = Math.round(valorNum * pctJur);
 
             const formatarNumero = (num) => {
-                return num.toLocaleString('pt-PT');
+                return formatarDolar(num);
             };
 
             const advInput = document.getElementById('input-valor_adv');
@@ -879,7 +971,7 @@
                 valorJurLimpeza = Math.round(valorLimpeza * 0.30);
             }
 
-            const formatar = (num) => num.toLocaleString('pt-BR');
+            const formatar = (num) => formatarDolar(num);
 
             if (valorInput) valorInput.value = formatar(valorLimpeza || 50000);
             if (valorAdvInput) valorAdvInput.value = formatar(valorAdvLimpeza || 35000);
@@ -924,7 +1016,7 @@
 `;
 
             if (escolha === "1") {
-                resultado += `[REQUERIMENTO][${pegarValor('solicitacao') === 'ABERTURA' ? 'ABERTURA CNPJ' : (pegarValor('solicitacao') === 'RENOVAÇÃO' ? 'RENOVAÇÃO CNPJ' : nomeReqAutomatico)}]\n\n` +
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
                              `[NOME ATUAL][${pegarValor('nome_atual')}]\n` +
                              `[NOME RETIFICADO][${pegarValor('nome_retificado')}]\n` +
                              `[PASSAPORTE DO REQUERENTE][${pegarValor('id_req')}]\n` +
@@ -1050,10 +1142,38 @@
 
                 resultado += `\n[ARMAMENTO][${selecionados}]\n` +
                              `[MOTIVO][${pegarValor('motivo')}]\n` +
+                             `[VALOR TOTAL (100% ADVOGADO)][${pegarValor('valor')}]\n` +
+                             `[DATA][${pegarValor('data')}]`;
+            }
+            else if (escolha === "7") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[TIPO DE DIVÓRCIO][${pegarValor('tipo_divorcio')}]\n\n`;
+
+                if (pegarValor('tipo_divorcio') === "Amigável") {
+                    resultado += `[NOME REQUERENTE 1][${pegarValor('div_nome_req1')}]\n` +
+                                 `[PASSAPORTE REQUERENTE 1][${pegarValor('div_id_req1')}]\n` +
+                                 `[TELEFONE REQUERENTE 1][${pegarValor('div_tel_req1')}]\n` +
+                                 `[NOME RETIFICADO REQUERENTE 1][${pegarValor('div_nome_ret1')}]\n\n` +
+                                 `[NOME REQUERENTE 2][${pegarValor('div_nome_req2')}]\n` +
+                                 `[PASSAPORTE REQUERENTE 2][${pegarValor('div_id_req2')}]\n` +
+                                 `[TELEFONE REQUERENTE 2][${pegarValor('div_tel_req2')}]\n` +
+                                 `[NOME RETIFICADO REQUERENTE 2][${pegarValor('div_nome_ret2')}]\n\n` +
+                                 `[DATA SEPARAÇÃO][${pegarValor('data_separacao')}]\n`;
+                } else {
+                    resultado += `[NOME REQUERENTE][${pegarValor('div_nome_req')}]\n` +
+                                 `[PASSAPORTE REQUERENTE][${pegarValor('div_id_req')}]\n` +
+                                 `[TELEFONE REQUERENTE][${pegarValor('div_tel_req')}]\n` +
+                                 `[NOME RETIFICADO][${pegarValor('div_nome_ret')}]\n` +
+                                 `[MOTIVO][${pegarValor('div_motivo')}]\n`;
+                }
+
+                resultado += `\n[VALOR TOTAL][${pegarValor('valor')}]\n` +
+                             `[VALOR JURIDICO 50%][${pegarValor('valor_jur')}]\n` +
+                             `[VALOR ADVOGADO 50%][${pegarValor('valor_adv')}]\n` +
                              `[DATA][${pegarValor('data')}]`;
             }
 
-            resultado += `\n\`\`\``;
+resultado += `\n\`\`\``;
 
             
             
@@ -1137,6 +1257,7 @@
             calcularValores();
             calcularValorLimpeza();
             handleFichaLimpaChange();
+            atualizarCamposDivorcio();
             gerarTemplate();
         });
 
@@ -1147,4 +1268,32 @@
         gerarTemplate();
     </script>
 </body>
-</html>
+</html            else if (escolha === "7") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[TIPO DE DIVÓRCIO][${pegarValor('tipo_divorcio')}]\n\n`;
+
+                if (pegarValor('tipo_divorcio') === "Amigável") {
+                    resultado += `[NOME REQUERENTE 1][${pegarValor('div_nome_req1')}]\n` +
+                                 `[PASSAPORTE REQUERENTE 1][${pegarValor('div_id_req1')}]\n` +
+                                 `[TELEFONE REQUERENTE 1][${pegarValor('div_tel_req1')}]\n` +
+                                 `[NOME RETIFICADO REQUERENTE 1][${pegarValor('div_nome_ret1')}]\n\n` +
+                                 `[NOME REQUERENTE 2][${pegarValor('div_nome_req2')}]\n` +
+                                 `[PASSAPORTE REQUERENTE 2][${pegarValor('div_id_req2')}]\n` +
+                                 `[TELEFONE REQUERENTE 2][${pegarValor('div_tel_req2')}]\n` +
+                                 `[NOME RETIFICADO REQUERENTE 2][${pegarValor('div_nome_ret2')}]\n\n` +
+                                 `[DATA SEPARAÇÃO][${pegarValor('data_separacao')}]\n`;
+                } else {
+                    resultado += `[NOME REQUERENTE][${pegarValor('div_nome_req')}]\n` +
+                                 `[PASSAPORTE REQUERENTE][${pegarValor('div_id_req')}]\n` +
+                                 `[TELEFONE REQUERENTE][${pegarValor('div_tel_req')}]\n` +
+                                 `[NOME RETIFICADO][${pegarValor('div_nome_ret')}]\n` +
+                                 `[MOTIVO][${pegarValor('div_motivo')}]\n`;
+                }
+
+                resultado += `\n[VALOR TOTAL][${pegarValor('valor')}]\n` +
+                             `[VALOR JURIDICO][${pegarValor('valor_jur')}]\n` +
+                             `[VALOR ADVOGADO][${pegarValor('valor_adv')}]\n` +
+                             `[DATA][${pegarValor('data')}]`;
+            }
+
+>
