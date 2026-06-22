@@ -124,7 +124,7 @@
                 <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo para Limpeza de Ficha e Troca de Nome c/ ficha suja) -->
                 <div id="area-ocr" class="card hidden">
                     <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal para somar os meses automaticamente.</p>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local fará OCR, identificará crimes, artigos, quantidades e somará os meses pelo Código Penal 2026.</p>
                     <label class="btn-upload">
                         Escolher Ficheiro
                         <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="processarImagem(event)">
@@ -132,6 +132,7 @@
                     <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
                     <div id="status-ocr" class="status-ia"></div>
                     <div id="resultado-crimes" class="status-ia" style="white-space: pre-wrap; color: #cbd5e1;"></div>
+                    <div id="texto-ocr-debug" class="status-ia hidden" style="white-space: pre-wrap; color: #64748b; max-height: 180px; overflow: auto; border-top: 1px solid #334155; margin-top: 0.75rem; padding-top: 0.75rem;"></div>
                 </div>
             </div>
 
@@ -1341,7 +1342,7 @@
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[|()[\]{}:;,.]/g, " ")
-                .replace(/\s*-\s*/g, "-")
+                .replace(/\s*-+\s*/g, "-")
                 .replace(/[^A-Z0-9\s\-\/]/g, " ")
                 .replace(/\s+/g, " ")
                 .trim();
@@ -1355,7 +1356,7 @@
             const a = normalizarTexto(art).replace(/\s+/g, "");
             if (a.includes("-")) {
                 const [num, letra] = a.split("-");
-                return `${escaparRegex(num)}\s*-?\s*${escaparRegex(letra)}`;
+                return `${escaparRegex(num)}\\s*-?\\s*${escaparRegex(letra)}`;
             }
             return escaparRegex(a);
         }
@@ -1369,20 +1370,60 @@
                 .sort((a, b) => b.length - a.length);
         }
 
-        function calcularSimilaridade(a, b) {
-            const wa = new Set(normalizarTexto(a).split(" ").filter(w => w.length > 2));
-            const wb = new Set(normalizarTexto(b).split(" ").filter(w => w.length > 2));
-            if (!wa.size || !wb.size) return 0;
+        function distanciaLevenshtein(a, b) {
+            a = normalizarTexto(a);
+            b = normalizarTexto(b);
+            const matriz = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+            for (let i = 0; i <= a.length; i++) matriz[i][0] = i;
+            for (let j = 0; j <= b.length; j++) matriz[0][j] = j;
+            for (let i = 1; i <= a.length; i++) {
+                for (let j = 1; j <= b.length; j++) {
+                    const custo = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matriz[i][j] = Math.min(
+                        matriz[i - 1][j] + 1,
+                        matriz[i][j - 1] + 1,
+                        matriz[i - 1][j - 1] + custo
+                    );
+                }
+            }
+            return matriz[a.length][b.length];
+        }
+
+        function similaridadeTexto(a, b) {
+            a = normalizarTexto(a);
+            b = normalizarTexto(b);
+            if (!a || !b) return 0;
+
+            if (a.includes(b) || b.includes(a)) return 0.95;
+
+            const palavrasA = new Set(a.split(" ").filter(w => w.length > 2));
+            const palavrasB = new Set(b.split(" ").filter(w => w.length > 2));
             let inter = 0;
-            wa.forEach(w => { if (wb.has(w)) inter++; });
-            return inter / Math.max(wa.size, wb.size);
+            palavrasB.forEach(w => { if (palavrasA.has(w)) inter++; });
+            const scorePalavras = palavrasB.size ? inter / palavrasB.size : 0;
+
+            const menor = a.length < b.length ? a : b;
+            const maior = a.length >= b.length ? a : b;
+            let melhorDist = distanciaLevenshtein(maior.slice(0, Math.min(maior.length, menor.length + 8)), menor);
+            const scoreEdicao = Math.max(0, 1 - (melhorDist / Math.max(maior.length, menor.length)));
+
+            return Math.max(scorePalavras, scoreEdicao);
         }
 
         function dividirLinhasOCR(textoOCR) {
-            return (textoOCR || "")
+            const linhasOriginais = (textoOCR || "")
                 .split(/\n|<br>|•|;/gi)
-                .map(normalizarTexto)
+                .map(l => l.trim())
                 .filter(l => l.length > 0);
+
+            const linhas = linhasOriginais.map(normalizarTexto).filter(l => l.length > 0);
+
+            // Também cria blocos com 2 e 3 linhas juntas, para casos em que o OCR quebra o crime no meio.
+            const blocos = [...linhas];
+            for (let i = 0; i < linhas.length - 1; i++) blocos.push(`${linhas[i]} ${linhas[i + 1]}`);
+            for (let i = 0; i < linhas.length - 2; i++) blocos.push(`${linhas[i]} ${linhas[i + 1]} ${linhas[i + 2]}`);
+
+            return blocos;
         }
 
         function extrairQuantidadeDaLinha(linha, termo, art) {
@@ -1393,7 +1434,9 @@
                 new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*(?:ART\\.?|ARTIGO)?\\s*${artEsc}(?:\\s|$)`),
                 new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
                 new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*${termoEsc}(?:\\s|$)`),
-                new RegExp(`${termoEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`)
+                new RegExp(`${termoEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
+                new RegExp(`(?:QTD|QTDE|QUANTIDADE)\\s*(\\d{1,2}).{0,20}${termoEsc}`),
+                new RegExp(`${termoEsc}.{0,20}(?:QTD|QTDE|QUANTIDADE)\\s*(\\d{1,2})`)
             ];
 
             for (const padrao of padroes) {
@@ -1407,72 +1450,74 @@
         }
 
         function analisarFichaCriminal(textoOCR) {
-            const linhas = dividirLinhasOCR(textoOCR);
+            const blocos = dividirLinhasOCR(textoOCR);
             const textoCompleto = normalizarTexto(textoOCR);
             const encontradosMap = new Map();
 
-            function adicionar(item, quantidade, confianca, origem) {
+            function adicionar(item, quantidade, confianca, origem, motivo) {
                 const chave = item.art;
-                const atual = encontradosMap.get(chave) || { ...item, quantidade: 0, confianca: 0, origens: [] };
-                atual.quantidade += quantidade;
+                const atual = encontradosMap.get(chave) || { ...item, quantidade: 0, confianca: 0, origens: [], motivos: [] };
+
+                // Evita duplicar demais quando o mesmo crime apareceu em linha e em bloco unido.
+                const origemCurta = origem.slice(0, 120);
+                if (!atual.origens.includes(origemCurta)) {
+                    atual.quantidade += quantidade;
+                    atual.origens.push(origemCurta);
+                    atual.motivos.push(motivo);
+                }
+
                 atual.confianca = Math.max(atual.confianca, confianca);
-                atual.origens.push(origem);
                 encontradosMap.set(chave, atual);
             }
 
-            linhas.forEach(linha => {
+            blocos.forEach(bloco => {
                 baseCrimesLongBeach.forEach(item => {
                     const termos = montarPadroesCrime(item);
-                    let achou = false;
-                    let termoAchado = "";
+                    let melhor = { score: 0, termo: "", motivo: "" };
 
                     const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artigoFlexivel(item.art)}\\b`);
-                    if (reArt.test(linha)) {
-                        achou = true;
-                        termoAchado = normalizarTexto(item.art);
+                    if (reArt.test(bloco)) {
+                        melhor = { score: 0.98, termo: normalizarTexto(item.art), motivo: "ARTIGO IDENTIFICADO" };
                     }
 
-                    if (!achou) {
-                        for (const termo of termos) {
-                            if (linha.includes(termo)) {
-                                achou = true;
-                                termoAchado = termo;
-                                break;
-                            }
+                    for (const termo of termos) {
+                        let score = similaridadeTexto(bloco, termo);
+                        if (score > melhor.score) {
+                            melhor = { score, termo, motivo: bloco.includes(termo) ? "PALAVRA-CHAVE EXATA" : "ANÁLISE INTELIGENTE/FUZZY" };
                         }
                     }
 
-                    if (!achou) {
-                        const melhor = termos.map(t => ({ termo: t, score: calcularSimilaridade(linha, t) }))
-                                            .sort((a, b) => b.score - a.score)[0];
-                        if (melhor && melhor.score >= 0.60) {
-                            achou = true;
-                            termoAchado = melhor.termo;
-                        }
+                    // Gatilhos especiais para evitar confusão entre roubo normal e assaltos específicos.
+                    if (normalizarTexto(item.crime).startsWith("ASSALTO") && !bloco.includes("ASSALTO")) {
+                        melhor.score = Math.min(melhor.score, 0.55);
+                    }
+                    if (item.art === "63" && /ASSALTO|JOALHERIA|BANCO|FLEECA|PALETO|COMEDY|MERGULHADOR|AMMUNITION|BARBEARIA|RESIDENCIA/.test(bloco)) {
+                        melhor.score = Math.min(melhor.score, 0.50);
                     }
 
-                    if (achou) {
-                        const qtd = extrairQuantidadeDaLinha(linha, termoAchado, item.art);
-                        adicionar(item, qtd, termoAchado === normalizarTexto(item.art) ? 0.95 : 0.85, linha);
+                    if (melhor.score >= 0.62) {
+                        const qtd = extrairQuantidadeDaLinha(bloco, melhor.termo, item.art);
+                        adicionar(item, qtd, melhor.score, bloco, melhor.motivo);
                     }
                 });
             });
 
+            // Varredura extra por artigo/nome no texto completo.
             baseCrimesLongBeach.forEach(item => {
                 if (encontradosMap.has(item.art)) return;
-                const termos = montarPadroesCrime(item);
+
                 const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artigoFlexivel(item.art)}\\b`, "g");
                 const artMatches = textoCompleto.match(reArt);
                 if (artMatches && artMatches.length > 0) {
-                    adicionar(item, artMatches.length, 0.80, `ARTIGO LOCALIZADO NO TEXTO: ${item.art}`);
+                    adicionar(item, artMatches.length, 0.82, `ARTIGO LOCALIZADO NO TEXTO: ${item.art}`, "ARTIGO NO TEXTO COMPLETO");
                     return;
                 }
 
-                for (const termo of termos) {
+                for (const termo of montarPadroesCrime(item)) {
                     const re = new RegExp(`(^|\\s)${escaparRegex(termo)}($|\\s)`, "g");
                     const matches = textoCompleto.match(re);
                     if (matches && matches.length > 0) {
-                        adicionar(item, matches.length, 0.75, `CRIME LOCALIZADO NO TEXTO: ${termo}`);
+                        adicionar(item, matches.length, 0.78, `CRIME LOCALIZADO NO TEXTO: ${termo}`, "PALAVRA-CHAVE NO TEXTO COMPLETO");
                         break;
                     }
                 }
@@ -1482,7 +1527,8 @@
                 .map(item => ({
                     ...item,
                     subtotal: item.quantidade * item.pena,
-                    confiancaTexto: item.confianca >= 0.90 ? "ALTA" : item.confianca >= 0.80 ? "MÉDIA" : "BAIXA"
+                    confiancaTexto: item.confianca >= 0.90 ? "ALTA" : item.confianca >= 0.78 ? "MÉDIA" : "BAIXA",
+                    motivoTexto: Array.from(new Set(item.motivos)).join(" / ")
                 }))
                 .sort((a, b) => {
                     const na = parseInt(String(a.art).match(/\d+/)?.[0] || "0", 10);
@@ -1491,27 +1537,74 @@
                     return String(a.art).localeCompare(String(b.art));
                 });
 
-            let totalMeses = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
-            if (totalMeses > 800) totalMeses = 800; // limite máximo previsto no código penal.
+            const totalBruto = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
+            const totalMeses = Math.min(totalBruto, 800);
 
-            return { totalMeses, encontrados };
+            return { totalMeses, totalBruto, encontrados, textoOCR: textoCompleto };
         }
 
-        function processarImagem(event) {
+        function melhorarImagemParaOCR(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const reader = new FileReader();
+
+                reader.onload = e => {
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const escala = Math.max(1, Math.min(3, 1800 / Math.max(img.width, img.height)));
+                        canvas.width = Math.round(img.width * escala);
+                        canvas.height = Math.round(img.height * escala);
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+
+                        // Converte para tons de cinza e aumenta contraste para melhorar OCR em prints escuros.
+                        for (let i = 0; i < data.length; i += 4) {
+                            let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                            gray = gray > 145 ? 255 : 0;
+                            data[i] = data[i + 1] = data[i + 2] = gray;
+                        }
+
+                        ctx.putImageData(imageData, 0, 0);
+                        canvas.toBlob(blob => resolve(blob || file), 'image/png');
+                    };
+                    img.src = e.target.result;
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function processarImagem(event) {
             const file = event.target.files[0];
             const statusDiv = document.getElementById('status-ocr');
             const nomeArquivo = document.getElementById('nome-arquivo');
             const resultadoCrimes = document.getElementById('resultado-crimes');
+            const debugOCR = document.getElementById('texto-ocr-debug');
 
             if (!file) return;
             nomeArquivo.innerText = file.name;
-            statusDiv.innerText = "🔄 ANALISANDO CAPTURA DE ECRÃ VIA OCR... AGUARDE.";
+            statusDiv.innerText = "🔄 IA LOCAL ANALISANDO A FICHA... MELHORANDO IMAGEM, LENDO OCR E CRUZANDO COM O CÓDIGO PENAL.";
             if (resultadoCrimes) resultadoCrimes.innerText = "";
+            if (debugOCR) {
+                debugOCR.innerText = "";
+                debugOCR.classList.add("hidden");
+            }
 
-            Tesseract.recognize(file, 'por+eng').then(({ data: { text } }) => {
+            try {
+                const imagemMelhorada = await melhorarImagemParaOCR(file);
+
+                const { data: { text } } = await Tesseract.recognize(imagemMelhorada, 'por+eng', {
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç0123456789-/ .,:;()',
+                    preserve_interword_spaces: '1'
+                });
+
                 const analise = analisarFichaCriminal(text);
 
-                statusDiv.innerText = `✅ ANÁLISE FINALIZADA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL DETECTADO: ${analise.totalMeses}M`;
+                statusDiv.innerText = `✅ ANÁLISE INTELIGENTE FINALIZADA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
 
                 const penaInput = document.getElementById('input-pena_atual');
                 if (penaInput) {
@@ -1520,17 +1613,29 @@
 
                 if (resultadoCrimes) {
                     if (analise.encontrados.length === 0) {
-                        resultadoCrimes.innerText = "NENHUM CRIME DA BASE FOI IDENTIFICADO COM SEGURANÇA. VERIFIQUE SE A IMAGEM ESTÁ NÍTIDA.";
+                        resultadoCrimes.innerText = "NENHUM CRIME FOI IDENTIFICADO COM SEGURANÇA. TENTE ENVIAR UMA IMAGEM MAIS NÍTIDA, COM A FICHA INTEIRA E SEM CORTES.";
                     } else {
-                        resultadoCrimes.innerText = analise.encontrados
-                            .map(item => `${item.quantidade}X - ART. ${item.art} — ${item.crime} | PENA: ${item.pena}M CADA | SUBTOTAL: ${item.subtotal}M | CONFIANÇA: ${item.confiancaTexto}`)
-                            .join("\n");
+                        const linhas = analise.encontrados.map(item =>
+                            `${item.quantidade}X - ART. ${item.art} — ${item.crime} | PENA: ${item.pena}M CADA | SUBTOTAL: ${item.subtotal}M | CONFIANÇA: ${item.confiancaTexto} | ${item.motivoTexto}`
+                        );
+
+                        let avisoLimite = "";
+                        if (analise.totalBruto > 800) {
+                            avisoLimite = `\n\n⚠️ TOTAL BRUTO: ${analise.totalBruto}M\n⚖️ LIMITE DO CÓDIGO PENAL APLICADO: 800M`;
+                        }
+
+                        resultadoCrimes.innerText = linhas.join("\n") + `\n\nTOTAL DA FICHA: ${analise.totalMeses}M${avisoLimite}`;
                     }
                 }
-            }).catch(err => {
-                statusDiv.innerText = "❌ FALHA AO PROCESSAR A IMAGEM LOCALMENTE.";
-                if (resultadoCrimes) resultadoCrimes.innerText = "";
-            });
+
+                if (debugOCR) {
+                    debugOCR.innerText = "TEXTO LIDO PELO OCR:\n\n" + text;
+                    debugOCR.classList.remove("hidden");
+                }
+            } catch (err) {
+                statusDiv.innerText = "❌ FALHA AO PROCESSAR A IMAGEM COM A IA LOCAL.";
+                if (resultadoCrimes) resultadoCrimes.innerText = "TENTE UMA IMAGEM MAIS NÍTIDA OU OUTRO FORMATO DE PRINT.";
+            }
         }
 
         function gerarTemplate() {
