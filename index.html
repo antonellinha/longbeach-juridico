@@ -5,7 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Protocolos & Modelos - Long Beach</title>
     <!-- Tesseract.js para leitura OCR local das capturas de ecrã das fichas criminais -->
-    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
+    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js">
+function calcularValorLimpeza() {
+    const mesesInput = document.getElementById('input-pena_atual');
+    let valorInput = document.getElementById('input-valor_limpeza');
+
+    if (!mesesInput) return;
+
+    if (!valorInput) {
+        valorInput = document.createElement('input');
+        valorInput.id = 'input-valor_limpeza';
+        valorInput.readOnly = true;
+        valorInput.placeholder = 'Valor da limpeza';
+
+        const container = mesesInput.parentElement;
+        if (container) {
+            const label = document.createElement('label');
+            label.innerText = 'Valor da Limpeza';
+            container.parentElement.appendChild(label);
+            container.parentElement.appendChild(valorInput);
+        }
+    }
+
+    const meses = parseInt((mesesInput.value || '').replace(/[^0-9]/g,'')) || 0;
+
+    let valor = 0;
+    if (meses >= 500) {
+        valor = 150000;
+    } else if (meses >= 300) {
+        valor = 100000;
+    } else if (meses > 0) {
+        valor = 50000;
+    }
+
+    valorInput.value = valor.toLocaleString('pt-BR');
+}
+
+document.addEventListener('input', function(e){
+    if(e.target && e.target.id === 'input-pena_atual'){
+        calcularValorLimpeza();
+    }
+});
+
+</script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -63,8 +105,6 @@
 
         .btn-secundario { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.6rem 0.9rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem; text-transform: uppercase; }
         .btn-secundario:hover { background-color: #475569; }
-        #area-recorte-ficha { margin-top: 1rem; }
-        #preview-ficha { width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #475569; border-radius: 0.5rem; background: #020617; cursor: default; }
         .ajuda-recorte { font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.35; }
 
 
@@ -131,23 +171,17 @@
                 <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo para Limpeza de Ficha e Troca de Nome c/ ficha suja) -->
                 <div id="area-ocr" class="card hidden">
                     <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local identificará automaticamente a área da ficha, fará OCR somente nela e somará os crimes pelo Código Penal 2026.</p>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local fará OCR na imagem inteira e somará somente os crimes encontrados pelo Código Penal 2026.</p>
                     <label class="btn-upload">
                         Escolher Ficheiro
-                        <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="prepararImagemFicha(event)">
                     </label>
                     <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
 
-                    <div id="area-recorte-ficha" class="hidden">
-                        <canvas id="preview-ficha"></canvas>
                         <div class="ajuda-recorte">
-                            A IA identifica automaticamente a área da <b>FICHA CRIMINAL</b> e analisa somente os crimes dentro dela.
+                            A IA fará a leitura da <b>IMAGEM INTEIRA</b> e considerará apenas linhas que pareçam crimes/artigos da ficha criminal.
                         </div>
                     </div>
 
-                    <div id="status-ocr" class="status-ia"></div>
-                    <div id="resultado-crimes" class="status-ia" style="white-space: pre-wrap; color: #cbd5e1;"></div>
-                    <div id="texto-ocr-debug" class="status-ia hidden" style="white-space: pre-wrap; color: #64748b; max-height: 180px; overflow: auto; border-top: 1px solid #334155; margin-top: 0.75rem; padding-top: 0.75rem;"></div>
                 </div>
             </div>
 
@@ -190,7 +224,7 @@
                 { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
                 { type: 'seccao', label: 'Saneamento Judicial' },
                 { id: 'ficha_limpa', label: 'Possui Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
-                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
+                { id: 'pena_atual', label: 'Meses Totais da Ficha', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
                 { type: 'seccao', label: 'Informações Adicionais' },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
                 { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
@@ -280,7 +314,7 @@
                 { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
                 { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
                 { type: 'seccao', label: 'Histórico Penal' },
-                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Aguardando captura de ecrã...', valorFixo: '0M' },
+                { id: 'pena_atual', label: 'Meses Totais da Ficha', placeholder: 'Digite os meses totais', valorFixo: '0M' },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
                 { id: 'data', label: 'Data', placeholder: '23/02/2025', valorFixo: '23/02/2025' }
             ],
@@ -291,7 +325,7 @@
                 { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
                 { type: 'seccao', label: 'Análise de Aptidão' },
                 { id: 'ficha_limpa', label: 'Há Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
-                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
+                { id: 'pena_atual', label: 'Meses Totais da Ficha', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
                 { id: 'armamento', label: 'Armamento (Selecione as opções desejadas)', type: 'checkboxes', options: ['M911', 'Mossberg 590', 'Steyr AUG'] },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
                 { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
@@ -1603,15 +1637,11 @@
         async function prepararImagemFicha(event) {
             const file = event.target.files[0];
             const nomeArquivo = document.getElementById('nome-arquivo');
-            const statusDiv = document.getElementById('status-ocr');
-            const areaRecorte = document.getElementById('area-recorte-ficha');
-            const resultadoCrimes = document.getElementById('resultado-crimes');
-            const debugOCR = document.getElementById('texto-ocr-debug');
 
             if (!file) return;
 
             nomeArquivo.innerText = file.name;
-            statusDiv.innerText = "🔄 CARREGANDO IMAGEM E PROCURANDO A ÁREA DA FICHA CRIMINAL...";
+            statusDiv.innerText = "🔄 CARREGANDO IMAGEM INTEIRA PARA ANÁLISE...";
             if (resultadoCrimes) resultadoCrimes.innerText = "";
             if (debugOCR) {
                 debugOCR.innerText = "";
@@ -1625,27 +1655,23 @@
             desenharPreviewFicha();
             areaRecorte.classList.remove("hidden");
 
-            statusDiv.innerText = "✅ ÁREA DA FICHA CRIMINAL IDENTIFICADA. INICIANDO ANÁLISE AUTOMÁTICA...";
+            statusDiv.innerText = "✅ IMAGEM CARREGADA. INICIANDO ANÁLISE AUTOMÁTICA DA IMAGEM INTEIRA...";
             await analisarAreaFichaSelecionada();
         }
 
         function detectarAreaFichaCriminal(img) {
-            // Busca visual aproximada: geralmente a ficha criminal é um painel/tabela mais central.
-            // O recorte padrão remove menus, bordas e áreas externas para evitar textos fora da ficha.
-            const margemX = Math.round(img.width * 0.10);
-            const margemY = Math.round(img.height * 0.28);
+            // Usa a imagem inteira, sem recorte pequeno.
             return {
-                x: margemX,
-                y: margemY,
-                w: img.width - margemX * 2,
-                h: img.height - margemY * 2
+                x: 0,
+                y: 0,
+                w: img.width,
+                h: img.height
             };
         }
 
         function desenharPreviewFicha() {
             if (!imagemFichaOriginal) return;
 
-            const canvas = document.getElementById("preview-ficha");
             const ctx = canvas.getContext("2d");
 
             const maxW = 900;
@@ -1737,9 +1763,6 @@
         }
 
         async function analisarAreaFichaSelecionada() {
-            const statusDiv = document.getElementById('status-ocr');
-            const resultadoCrimes = document.getElementById('resultado-crimes');
-            const debugOCR = document.getElementById('texto-ocr-debug');
 
             if (!imagemFichaOriginal) {
                 statusDiv.innerText = "❌ ESCOLHA UMA IMAGEM PRIMEIRO.";
@@ -1749,7 +1772,7 @@
             try {
                 const area = recorteAutomaticoFicha || detectarAreaFichaCriminal(imagemFichaOriginal);
 
-                statusDiv.innerText = "🔄 IA LOCAL LENDO APENAS A ÁREA IDENTIFICADA COMO FICHA CRIMINAL...";
+                statusDiv.innerText = "🔄 IA LOCAL LENDO A IMAGEM INTEIRA E FILTRANDO APENAS LINHAS DE CRIMES...";
                 if (resultadoCrimes) resultadoCrimes.innerText = "";
                 if (debugOCR) {
                     debugOCR.innerText = "";
@@ -1766,7 +1789,7 @@
                 const textoFicha = filtrarTextoSomenteFichaCriminal(text);
                 const analise = analisarFichaCriminal(textoFicha);
 
-                statusDiv.innerText = `✅ ANÁLISE FINALIZADA SOMENTE NA FICHA CRIMINAL! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
+                statusDiv.innerText = `✅ ANÁLISE FINALIZADA NA IMAGEM INTEIRA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
 
                 const penaInput = document.getElementById('input-pena_atual');
                 if (penaInput) {
@@ -1791,7 +1814,7 @@
                 }
 
                 if (debugOCR) {
-                    debugOCR.innerText = "TEXTO LIDO APENAS DA ÁREA DA FICHA CRIMINAL:\n\n" + textoFicha;
+                    debugOCR.innerText = "TEXTO LIDO NA IMAGEM INTEIRA:\n\n" + textoFicha;
                     debugOCR.classList.remove("hidden");
                 }
             } catch (err) {
