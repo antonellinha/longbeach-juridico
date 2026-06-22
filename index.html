@@ -64,7 +64,7 @@
         .btn-secundario { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.6rem 0.9rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem; text-transform: uppercase; }
         .btn-secundario:hover { background-color: #475569; }
         #area-recorte-ficha { margin-top: 1rem; }
-        #preview-ficha { width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #475569; border-radius: 0.5rem; background: #020617; cursor: crosshair; }
+        #preview-ficha { width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #475569; border-radius: 0.5rem; background: #020617; cursor: default; }
         .ajuda-recorte { font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.35; }
 
 
@@ -131,7 +131,7 @@
                 <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo para Limpeza de Ficha e Troca de Nome c/ ficha suja) -->
                 <div id="area-ocr" class="card hidden">
                     <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local fará OCR, identificará crimes, artigos, quantidades e somará os meses pelo Código Penal 2026.</p>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local identificará automaticamente a área da ficha, fará OCR somente nela e somará os crimes pelo Código Penal 2026.</p>
                     <label class="btn-upload">
                         Escolher Ficheiro
                         <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="prepararImagemFicha(event)">
@@ -141,10 +141,8 @@
                     <div id="area-recorte-ficha" class="hidden">
                         <canvas id="preview-ficha"></canvas>
                         <div class="ajuda-recorte">
-                            Selecione manualmente apenas a tabela/lista azul da <b>FICHA CRIMINAL</b>, onde aparecem os crimes. Evite incluir nome, ID, telefone, menus ou dados pessoais.
+                            A IA identifica automaticamente a área da <b>FICHA CRIMINAL</b> e analisa somente os crimes dentro dela.
                         </div>
-                        <button type="button" class="btn-secundario" onclick="analisarAreaFichaSelecionada()">🔍 Analisar somente ficha criminal</button>
-                        <button type="button" class="btn-secundario" onclick="limparSelecaoFicha()">↺ Usar recorte automático</button>
                     </div>
 
                     <div id="status-ocr" class="status-ia"></div>
@@ -1627,7 +1625,8 @@
             desenharPreviewFicha();
             areaRecorte.classList.remove("hidden");
 
-            statusDiv.innerText = "✅ ÁREA DA FICHA CRIMINAL PREPARADA. CLIQUE EM ANALISAR OU ARRASTE PARA SELECIONAR MANUALMENTE.";
+            statusDiv.innerText = "✅ ÁREA DA FICHA CRIMINAL IDENTIFICADA. INICIANDO ANÁLISE AUTOMÁTICA...";
+            await analisarAreaFichaSelecionada();
         }
 
         function detectarAreaFichaCriminal(img) {
@@ -1677,57 +1676,13 @@
         }
 
         function ativarSelecaoManualFicha(canvas) {
-            let inicio = null;
-
-            canvas.onmousedown = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                inicio = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-            };
-
-            canvas.onmousemove = (e) => {
-                if (!inicio) return;
-                const rect = canvas.getBoundingClientRect();
-                const atual = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-
-                desenharPreviewFicha();
-
-                const ctx = canvas.getContext("2d");
-                ctx.strokeStyle = "#22c55e";
-                ctx.lineWidth = 2;
-                ctx.strokeRect(inicio.x, inicio.y, atual.x - inicio.x, atual.y - inicio.y);
-            };
-
-            canvas.onmouseup = (e) => {
-                if (!inicio) return;
-
-                const rect = canvas.getBoundingClientRect();
-                const fim = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-                const escala = parseFloat(canvas.dataset.escala || "1");
-
-                const x = Math.min(inicio.x, fim.x) / escala;
-                const y = Math.min(inicio.y, fim.y) / escala;
-                const w = Math.abs(fim.x - inicio.x) / escala;
-                const h = Math.abs(fim.y - inicio.y) / escala;
-
-                if (w > 30 && h > 30) {
-                    selecaoFicha = {
-                        x: Math.round(x),
-                        y: Math.round(y),
-                        w: Math.round(w),
-                        h: Math.round(h)
-                    };
-                }
-
-                inicio = null;
-                desenharPreviewFicha();
-            };
+            // Seleção manual removida: o sistema usa sempre o recorte automático da área de FICHA CRIMINAL.
+            canvas.style.cursor = "default";
         }
 
         function limparSelecaoFicha() {
+            // Mantido apenas por compatibilidade, sem ação.
             selecaoFicha = null;
-            desenharPreviewFicha();
-            const statusDiv = document.getElementById('status-ocr');
-            statusDiv.innerText = "↺ SELEÇÃO MANUAL REMOVIDA. O RECORTE AUTOMÁTICO DA FICHA CRIMINAL SERÁ USADO.";
         }
 
         function recortarImagemFicha(img, area) {
@@ -1792,7 +1747,7 @@
             }
 
             try {
-                const area = selecaoFicha || recorteAutomaticoFicha || detectarAreaFichaCriminal(imagemFichaOriginal);
+                const area = recorteAutomaticoFicha || detectarAreaFichaCriminal(imagemFichaOriginal);
 
                 statusDiv.innerText = "🔄 IA LOCAL LENDO APENAS A ÁREA IDENTIFICADA COMO FICHA CRIMINAL...";
                 if (resultadoCrimes) resultadoCrimes.innerText = "";
@@ -1841,7 +1796,7 @@
                 }
             } catch (err) {
                 statusDiv.innerText = "❌ FALHA AO ANALISAR A ÁREA DA FICHA CRIMINAL.";
-                if (resultadoCrimes) resultadoCrimes.innerText = "TENTE SELECIONAR MANUALMENTE SOMENTE A ÁREA DOS CRIMES.";
+                if (resultadoCrimes) resultadoCrimes.innerText = "TENTE ENVIAR UM PRINT MAIS NÍTIDO COM A FICHA CRIMINAL COMPLETA.";
             }
         }
 
