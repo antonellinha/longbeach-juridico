@@ -4,52 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Protocolos & Modelos - Long Beach</title>
-    <!-- Tesseract.js para leitura OCR local das capturas de ecrã das fichas criminais -->
-    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js">
-function calcularValorLimpeza() {
-    const mesesInput = document.getElementById('input-pena_atual');
-    let valorInput = document.getElementById('input-valor_limpeza');
-
-    if (!mesesInput) return;
-
-    if (!valorInput) {
-        valorInput = document.createElement('input');
-        valorInput.id = 'input-valor_limpeza';
-        valorInput.readOnly = true;
-        valorInput.placeholder = 'Valor da limpeza';
-
-        const container = mesesInput.parentElement;
-        if (container) {
-            const label = document.createElement('label');
-            label.innerText = 'Valor da Limpeza';
-            container.parentElement.appendChild(label);
-            container.parentElement.appendChild(valorInput);
-        }
-    }
-
-    const meses = parseInt((mesesInput.value || '').replace(/[^0-9]/g,'')) || 0;
-
-    let valor = 0;
-    if (meses >= 500) {
-        valor = 150000;
-    } else if (meses >= 300) {
-        valor = 100000;
-    } else if (meses > 0) {
-        valor = 50000;
-    }
-
-    valorInput.value = valor.toLocaleString('pt-BR');
-}
-
-document.addEventListener('input', function(e){
-    if(e.target && e.target.id === 'input-pena_atual'){
-        calcularValorLimpeza();
-    }
-});
-
-</script>
-    
-    <style>
+<style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #0f172a; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; padding: 2rem 1rem; }
         .container { max-width: 1100px; margin: 0 auto; }
@@ -97,17 +52,7 @@ document.addEventListener('input', function(e){
         .btn-copiar:hover { background-color: #475569; }
         
         #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; resize: vertical; height: 350px; }
-        
-        .btn-upload { background-color: #2563eb; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; display: inline-block; text-align: center; margin-top: 0.5rem; }
-        .btn-upload:hover { background-color: #1d4ed8; }
         .hidden { display: none !important; }
-        .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; font-weight: 500; }
-
-        .btn-secundario { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.6rem 0.9rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem; text-transform: uppercase; }
-        .btn-secundario:hover { background-color: #475569; }
-        #area-recorte-ficha { margin-top: 1rem; }
-        #preview-ficha { width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #475569; border-radius: 0.5rem; background: #020617; cursor: default; }
-        .ajuda-recorte { font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.35; }
 
 
         /* Estilização moderna para o Toast Banner de Cópia */
@@ -149,8 +94,16 @@ document.addEventListener('input', function(e){
                 <div class="card">
                     <h2>⚖️ Identificação do Advogado</h2>
                     <div class="grupo-campo">
-                        <label>Nome do Advogado</label>
-                        <input type="text" id="adv-nome" placeholder="Ex: Dr. John Doe">
+                        <label>Advogado Responsável</label>
+                        <select id="adv-nome">
+                            <option value="Antonella Oberlin | 7 | <@263770531948396544>">Antonella Oberlin | 7</option>
+                            <option value="Gabriela Oberlin | 4 | <@337964744193605635>">Gabriela Oberlin | 4</option>
+                            <option value="Betty O'Neal Zatta | 165 | <@646078419989299200>">Betty O'Neal Zatta | 165</option>
+                            <option value="Hel Ariath Lothbrook | 208 | <@495428848482254858>">Hel Ariath Lothbrook | 208</option>
+                            <option value="Nara P. Somma | 181 | <@189106342860947457>">Nara P. Somma | 181</option>
+                            <option value="Jonny Escobar | 285 | <@478061464545132556>">Jonny Escobar | 285</option>
+                            <option value="Jack Risonho H. Abdulla | 166 | <@1511080110172672121>">Jack Risonho H. Abdulla | 166</option>
+                        </select>
                     </div>
                 </div>
 
@@ -168,25 +121,6 @@ document.addEventListener('input', function(e){
                             <option value="6">6. Porte de Arma</option>
                         </select>
                     </div>
-                </div>
-
-                <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo para Limpeza de Ficha e Troca de Nome c/ ficha suja) -->
-                <div id="area-ocr" class="card hidden">
-                    <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local fará OCR na imagem inteira e somará somente os crimes encontrados pelo Código Penal 2026.</p>
-                    <label class="btn-upload">
-                        Escolher Ficheiro
-                    </label>
-                    <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
-
-                    <div id="area-recorte-ficha" class="hidden">
-                        <canvas id="preview-ficha"></canvas>
-                        <div class="ajuda-recorte">
-                            A IA fará a leitura da <b>IMAGEM INTEIRA</b> e considerará apenas linhas que pareçam crimes/artigos da ficha criminal.
-                        </div>
-                    </div>
-
-                    <div id="texto-ocr-debug" class="status-ia hidden" style="white-space: pre-wrap; color: #64748b; max-height: 180px; overflow: auto; border-top: 1px solid #334155; margin-top: 0.75rem; padding-top: 0.75rem;"></div>
                 </div>
             </div>
 
@@ -227,9 +161,19 @@ document.addEventListener('input', function(e){
                 { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome do Cliente' },
                 { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
                 { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+
+                { type: 'seccao', label: 'Honorários' },
+                { id: 'valor_troca_nome', label: 'Honorários da Troca de Nome', placeholder: 'Valor fixo', valorFixo: '65.000', readonly: true },
+
                 { type: 'seccao', label: 'Saneamento Judicial' },
                 { id: 'ficha_limpa', label: 'Possui Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
-                { id: 'pena_atual', label: 'Meses Totais da Ficha', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
+                { id: 'faixa_limpeza', label: 'Tempo Preso', type: 'select', options: ['≤ 150 meses preso', '≥ 300 meses preso', '≥ 500 meses preso'], dynamicHide: true },
+                { id: 'valor_limpeza', label: 'Valor da Limpeza', placeholder: 'Auto-calculado', valorFixo: '50.000', readonly: true, dynamicHide: true },
+                { id: 'valor_adv_limpeza', label: 'Valor Advogado Limpeza (70%)', placeholder: 'Auto-calculado', valorFixo: '35.000', readonly: true, dynamicHide: true },
+                { id: 'valor_jur_limpeza', label: 'Valor Jurídico Limpeza (30%)', placeholder: 'Auto-calculado', valorFixo: '15.000', readonly: true, dynamicHide: true },
+                { id: 'total_adv_processo', label: 'Total Advogado no Processo', placeholder: 'Auto-calculado', valorFixo: '65.000', readonly: true, dynamicHide: true },
+                { id: 'total_jur_processo', label: 'Total Jurídico no Processo', placeholder: 'Auto-calculado', valorFixo: '0', readonly: true, dynamicHide: true },
+
                 { type: 'seccao', label: 'Informações Adicionais' },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
                 { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
@@ -318,8 +262,40 @@ document.addEventListener('input', function(e){
                 { id: 'nome_completo', label: 'Nome Completo do Requerente', placeholder: 'Nome do Cliente' },
                 { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
                 { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+
                 { type: 'seccao', label: 'Histórico Penal' },
-                { id: 'pena_atual', label: 'Meses Totais da Ficha', placeholder: 'Digite os meses totais', valorFixo: '0M' },
+                { 
+                    id: 'faixa_limpeza', 
+                    label: 'Tempo Preso', 
+                    type: 'select', 
+                    options: [
+                        '≤ 150 meses preso',
+                        '≥ 300 meses preso',
+                        '≥ 500 meses preso'
+                    ] 
+                },
+                { 
+                    id: 'valor_limpeza', 
+                    label: 'Valor da Limpeza', 
+                    placeholder: 'Auto-calculado', 
+                    valorFixo: '50.000', 
+                    readonly: true 
+                },
+                { 
+                    id: 'valor_adv_limpeza', 
+                    label: 'Valor Advogado (70%)', 
+                    placeholder: 'Auto-calculado', 
+                    valorFixo: '35.000', 
+                    readonly: true 
+                },
+                { 
+                    id: 'valor_jur_limpeza', 
+                    label: 'Valor Jurídico (30%)', 
+                    placeholder: 'Auto-calculado', 
+                    valorFixo: '15.000', 
+                    readonly: true 
+                },
+
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
                 { id: 'data', label: 'Data', placeholder: '23/02/2025', valorFixo: '23/02/2025' }
             ],
@@ -331,7 +307,7 @@ document.addEventListener('input', function(e){
                 { type: 'seccao', label: 'Análise de Aptidão' },
                 { id: 'ficha_limpa', label: 'Há Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
                 { id: 'pena_atual', label: 'Meses Totais da Ficha', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
-                { id: 'armamento', label: 'Armamento (Selecione as opções desejadas)', type: 'checkboxes', options: ['M911', 'Mossberg 590', 'Steyr AUG'] },
+                { id: 'armamento', label: 'Armamento', type: 'select', options: ['M911', 'Mossberg 590', 'Steyr AUG'] },
                 { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
                 { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
             ]
@@ -352,9 +328,6 @@ document.addEventListener('input', function(e){
             const container = document.getElementById('campos-dinamicos');
             container.innerHTML = '';
 
-            // Decisão lógica de exibição do card OCR
-            atualizarVisibilidadeOCR();
-
             layouts[escolha].forEach(campo => {
                 if (campo.type === 'seccao') {
                     const divisor = document.createElement('div');
@@ -369,10 +342,10 @@ document.addEventListener('input', function(e){
 
                 const div = document.createElement('div');
                 div.id = `container-${campo.id}`;
-                if (campo.id === 'descricao' || campo.id === 'motivo' || campo.type === 'checkboxes') {
+                if (campo.id === 'descricao' || campo.id === 'motivo') {
                     div.className = 'full-width';
                 }
-                
+
                 const label = document.createElement('label');
                 label.innerText = campo.label;
                 div.appendChild(label);
@@ -380,15 +353,21 @@ document.addEventListener('input', function(e){
                 if (campo.type === 'select') {
                     const input = document.createElement('select');
                     input.id = `input-${campo.id}`;
+
                     if (campo.id === 'ficha_limpa') {
                         input.onchange = handleFichaLimpaChange;
                     }
+                    if (campo.id === 'faixa_limpeza') {
+                        input.onchange = calcularValorLimpeza;
+                    }
+
                     campo.options.forEach(opt => {
                         const optionElement = document.createElement('option');
                         optionElement.value = opt;
                         optionElement.innerText = opt;
                         input.appendChild(optionElement);
                     });
+
                     div.appendChild(input);
                 } else if (campo.type === 'checkboxes') {
                     const wrapCheckboxes = document.createElement('div');
@@ -417,6 +396,7 @@ document.addEventListener('input', function(e){
                         itemLabel.appendChild(document.createTextNode(opt));
                         wrapCheckboxes.appendChild(itemLabel);
                     });
+
                     div.appendChild(wrapCheckboxes);
                 } else {
                     const input = document.createElement('input');
@@ -425,21 +405,64 @@ document.addEventListener('input', function(e){
                     input.placeholder = campo.placeholder;
                     input.value = campo.valorFixo || '';
 
+                    if (campo.id.includes('id')) {
+                        input.inputMode = 'numeric';
+                        input.pattern = '[0-9]*';
+                        input.addEventListener('input', () => {
+                            input.value = input.value.replace(/[^0-9]/g, '');
+                        });
+                    }
+
+                    if (campo.id.includes('tel') || campo.id === 'telefone') {
+                        input.inputMode = 'numeric';
+                        input.maxLength = 7;
+                        input.placeholder = 'XXX-XXX';
+                        input.addEventListener('input', () => {
+                            let numeros = input.value.replace(/[^0-9]/g, '').slice(0, 6);
+                            if (numeros.length > 3) {
+                                input.value = numeros.slice(0, 3) + '-' + numeros.slice(3);
+                            } else {
+                                input.value = numeros;
+                            }
+                        });
+                    }
+
+                    if (campo.id === 'data') {
+                        input.placeholder = 'XX/XX/20XX';
+                        input.maxLength = 10;
+
+                        input.addEventListener('input', () => {
+                            let numeros = input.value.replace(/[^0-9]/g, '').slice(0, 8);
+
+                            if (numeros.length > 4) {
+                                input.value = numeros.slice(0,2) + '/' + numeros.slice(2,4) + '/' + numeros.slice(4);
+                            } else if (numeros.length > 2) {
+                                input.value = numeros.slice(0,2) + '/' + numeros.slice(2);
+                            } else {
+                                input.value = numeros;
+                            }
+                        });
+                    }
+
                     if (campo.readonly) {
                         input.readOnly = true;
                         input.style.backgroundColor = '#1e293b';
                         input.style.borderColor = '#475569';
                         input.style.color = '#38bdf8';
                     }
+
                     div.appendChild(input);
                 }
 
                 container.appendChild(div);
             });
 
-            // Forçar ajuste do estado condicional da Troca de Nome e Porte de Arma após renderizar
-            if (["1", "6"].includes(escolha)) {
+            if (escolha === "1" || escolha === "6") {
                 handleFichaLimpaChange();
+            }
+
+            if (escolha === "1" || escolha === "5") {
+                calcularValorLimpeza();
             }
         }
 
@@ -448,30 +471,50 @@ document.addEventListener('input', function(e){
             if (escolha !== "1" && escolha !== "6") return;
 
             const fichaLimpaVal = document.getElementById('input-ficha_limpa')?.value;
-            const penaContainer = document.getElementById('container-pena_atual');
-            
-            if (fichaLimpaVal === "Não") {
-                penaContainer?.classList.remove('hidden');
-            } else {
-                penaContainer?.classList.add('hidden');
-                // Reseta valor se voltar a Sim
-                const penaInput = document.getElementById('input-pena_atual');
-                if (penaInput) penaInput.value = '0M';
+
+            if (escolha === "1") {
+                const camposLimpeza = [
+                    'faixa_limpeza',
+                    'valor_limpeza',
+                    'valor_adv_limpeza',
+                    'valor_jur_limpeza',
+                    'total_adv_processo',
+                    'total_jur_processo'
+                ];
+
+                camposLimpeza.forEach(id => {
+                    const container = document.getElementById(`container-${id}`);
+                    if (!container) return;
+
+                    if (fichaLimpaVal === "Não") {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                });
+
+                calcularValorLimpeza();
+                return;
             }
+
+            if (escolha === "6") {
+                const penaContainer = document.getElementById('container-pena_atual');
+
+                if (fichaLimpaVal === "Não") {
+                    penaContainer?.classList.remove('hidden');
+                } else {
+                    penaContainer?.classList.add('hidden');
+                    const penaInput = document.getElementById('input-pena_atual');
+                    if (penaInput) penaInput.value = '0M';
+                }
+            }
+
             atualizarVisibilidadeOCR();
         }
 
         function atualizarVisibilidadeOCR() {
-            const escolha = document.getElementById('select-template').value;
             const areaOcr = document.getElementById('area-ocr');
-            const fichaLimpaVal = document.getElementById('input-ficha_limpa')?.value;
-
-            // OCR ativo se for Limpeza de Ficha OU se for Troca de Nome/Porte de Arma com Ficha Suja
-            if (escolha === "5" || (["1", "6"].includes(escolha) && fichaLimpaVal === "Não")) {
-                areaOcr.classList.remove('hidden');
-            } else {
-                areaOcr.classList.add('hidden');
-            }
+            if (areaOcr) areaOcr.classList.add('hidden');
         }
 
         // Eventos para recalcular divisões financeiras ao introduzir valores
@@ -516,1324 +559,52 @@ document.addEventListener('input', function(e){
             if (jurInput) jurInput.value = valorJur > 0 ? `${formatarNumero(valorJur)}` : '';
         }
 
+        function calcularValorLimpeza() {
+            const escolha = document.getElementById('select-template').value;
+            const faixaInput = document.getElementById('input-faixa_limpeza');
+            const valorInput = document.getElementById('input-valor_limpeza');
+            const valorAdvInput = document.getElementById('input-valor_adv_limpeza');
+            const valorJurInput = document.getElementById('input-valor_jur_limpeza');
+            const totalAdvInput = document.getElementById('input-total_adv_processo');
+            const totalJurInput = document.getElementById('input-total_jur_processo');
 
-        // BASE COMPLETA DO CÓDIGO PENAL LONG BEACH 2026 PARA ANÁLISE DA FICHA
-        // Fonte: PDF "CÓDIGO PENAL DE LONG BEACH 2026" enviado pelo usuário.
-        // Obs.: artigos sem pena em meses, porte cassado ou apenas apreensão/multa foram deixados fora do somatório.
-        const baseCrimesLongBeach = [
-            {
-                        "art": "1",
-                        "crime": "OCULTAÇÃO DE FACE",
-                        "pena": 5,
-                        "palavras": [
-                                    "OCULTACAO DE FACE",
-                                    "MASCARA",
-                                    "ROSTO COBERTO",
-                                    "FACE COBERTA",
-                                    "OCULTAR FACE"
-                        ]
-            },
-            {
-                        "art": "2",
-                        "crime": "ATENTADO AO PUDOR / ATO OBSCENO",
-                        "pena": 30,
-                        "palavras": [
-                                    "ATENTADO AO PUDOR",
-                                    "ATO OBSCENO",
-                                    "OBSCENO",
-                                    "PUDOR"
-                        ]
-            },
-            {
-                        "art": "3",
-                        "crime": "CORRIDAS ILEGAIS",
-                        "pena": 30,
-                        "palavras": [
-                                    "CORRIDA ILEGAL",
-                                    "CORRIDAS ILEGAIS",
-                                    "RACHA"
-                        ]
-            },
-            {
-                        "art": "4",
-                        "crime": "PERTURBAÇÃO DA PAZ",
-                        "pena": 25,
-                        "palavras": [
-                                    "PERTURBACAO DA PAZ",
-                                    "PERTURBAR A PAZ",
-                                    "PERTURBACAO"
-                        ]
-            },
-            {
-                        "art": "5",
-                        "crime": "EXERCÍCIO ILEGAL DA PROFISSÃO",
-                        "pena": 20,
-                        "palavras": [
-                                    "EXERCICIO ILEGAL",
-                                    "EXERCICIO ILEGAL DA PROFISSAO"
-                        ]
-            },
-            {
-                        "art": "6",
-                        "crime": "FALSIDADE IDEOLÓGICA",
-                        "pena": 20,
-                        "palavras": [
-                                    "FALSIDADE IDEOLOGICA",
-                                    "IDENTIDADE FALSA"
-                        ]
-            },
-            {
-                        "art": "7",
-                        "crime": "INCITAÇÃO",
-                        "pena": 20,
-                        "palavras": [
-                                    "INCITACAO",
-                                    "INCITAR"
-                        ]
-            },
-            {
-                        "art": "8",
-                        "crime": "DÍVIDAS",
-                        "pena": 40,
-                        "palavras": [
-                                    "DIVIDA",
-                                    "DIVIDAS"
-                        ]
-            },
-            {
-                        "art": "10",
-                        "crime": "UTILIZAÇÃO DE APARELHOS ELETRÔNICOS NO PRESÍDIO DE LONG BEACH",
-                        "pena": 20,
-                        "palavras": [
-                                    "APARELHO ELETRONICO",
-                                    "CELULAR NO PRESIDIO",
-                                    "RADIO NO PRESIDIO",
-                                    "ELETRONICOS NO PRESIDIO"
-                        ]
-            },
-            {
-                        "art": "11",
-                        "crime": "DIFAMAÇÃO",
-                        "pena": 15,
-                        "palavras": [
-                                    "DIFAMACAO",
-                                    "DIFAMAR"
-                        ]
-            },
-            {
-                        "art": "13",
-                        "crime": "CALÚNIA",
-                        "pena": 20,
-                        "palavras": [
-                                    "CALUNIA",
-                                    "CALUNIAR"
-                        ]
-            },
-            {
-                        "art": "14",
-                        "crime": "AMEAÇA",
-                        "pena": 20,
-                        "palavras": [
-                                    "AMEACA",
-                                    "AMEACAR"
-                        ]
-            },
-            {
-                        "art": "15",
-                        "crime": "OMISSÃO DE SOCORRO",
-                        "pena": 30,
-                        "palavras": [
-                                    "OMISSAO DE SOCORRO"
-                        ]
-            },
-            {
-                        "art": "16",
-                        "crime": "LATROCÍNIO",
-                        "pena": 80,
-                        "palavras": [
-                                    "LATROCINIO",
-                                    "ROUBO COM RESULTADO MORTE"
-                        ]
-            },
-            {
-                        "art": "17",
-                        "crime": "LESÃO CORPORAL",
-                        "pena": 20,
-                        "palavras": [
-                                    "LESAO CORPORAL",
-                                    "AGRESSAO"
-                        ]
-            },
-            {
-                        "art": "18",
-                        "crime": "STALKING",
-                        "pena": 30,
-                        "palavras": [
-                                    "STALKING",
-                                    "PERSEGUICAO"
-                        ]
-            },
-            {
-                        "art": "19",
-                        "crime": "ABANDONO DE INCAPAZ",
-                        "pena": 40,
-                        "palavras": [
-                                    "ABANDONO DE INCAPAZ"
-                        ]
-            },
-            {
-                        "art": "20",
-                        "crime": "MAUS TRATOS",
-                        "pena": 40,
-                        "palavras": [
-                                    "MAUS TRATOS",
-                                    "MALTRATO"
-                        ]
-            },
-            {
-                        "art": "21",
-                        "crime": "HOMICÍDIO CULPOSO",
-                        "pena": 20,
-                        "palavras": [
-                                    "HOMICIDIO CULPOSO"
-                        ]
-            },
-            {
-                        "art": "22",
-                        "crime": "DENUNCIAÇÃO CALUNIOSA",
-                        "pena": 30,
-                        "palavras": [
-                                    "DENUNCIACAO CALUNIOSA",
-                                    "DENUNCIA FALSA"
-                        ]
-            },
-            {
-                        "art": "23",
-                        "crime": "HOMICÍDIO DOLOSO",
-                        "pena": 30,
-                        "palavras": [
-                                    "HOMICIDIO DOLOSO"
-                        ]
-            },
-            {
-                        "art": "23-A",
-                        "crime": "ASSASSINATO LEVE",
-                        "pena": 45,
-                        "palavras": [
-                                    "ASSASSINATO LEVE"
-                        ]
-            },
-            {
-                        "art": "23-B",
-                        "crime": "ASSASSINATO MÉDIO",
-                        "pena": 55,
-                        "palavras": [
-                                    "ASSASSINATO MEDIO"
-                        ]
-            },
-            {
-                        "art": "23-C",
-                        "crime": "ASSASSINATO PESADO",
-                        "pena": 62,
-                        "palavras": [
-                                    "ASSASSINATO PESADO"
-                        ]
-            },
-            {
-                        "art": "24",
-                        "crime": "HOMICÍDIO QUALIFICADO",
-                        "pena": 100,
-                        "palavras": [
-                                    "HOMICIDIO QUALIFICADO"
-                        ]
-            },
-            {
-                        "art": "25",
-                        "crime": "EXTERMÍNIO/MASSACRE",
-                        "pena": 80,
-                        "palavras": [
-                                    "EXTERMINIO",
-                                    "MASSACRE"
-                        ]
-            },
-            {
-                        "art": "26",
-                        "crime": "TERRORISMO",
-                        "pena": 50,
-                        "palavras": [
-                                    "TERRORISMO"
-                        ]
-            },
-            {
-                        "art": "27",
-                        "crime": "SEQUESTRO (CÁRCERE PRIVADO)",
-                        "pena": 50,
-                        "palavras": [
-                                    "SEQUESTRO",
-                                    "CARCERE PRIVADO"
-                        ]
-            },
-            {
-                        "art": "28",
-                        "crime": "ORGANIZAÇÃO CRIMINOSA",
-                        "pena": 60,
-                        "palavras": [
-                                    "ORGANIZACAO CRIMINOSA",
-                                    "ORG CRIMINOSA"
-                        ]
-            },
-            {
-                        "art": "29",
-                        "crime": "TRÁFICO DE DROGAS",
-                        "pena": 30,
-                        "palavras": [
-                                    "TRAFICO DE DROGAS",
-                                    "TRAFICO"
-                        ]
-            },
-            {
-                        "art": "30",
-                        "crime": "POSSE DE DROGAS ILEGAIS",
-                        "pena": 20,
-                        "palavras": [
-                                    "POSSE DE DROGAS",
-                                    "DROGAS ILEGAIS"
-                        ]
-            },
-            {
-                        "art": "31",
-                        "crime": "TRÁFICO DE ARMAS E MUNIÇÕES",
-                        "pena": 80,
-                        "palavras": [
-                                    "TRAFICO DE ARMAS",
-                                    "TRAFICO DE MUNICOES"
-                        ]
-            },
-            {
-                        "art": "32",
-                        "crime": "PORTE ILEGAL DE ARMA DE FOGO LEVE",
-                        "pena": 10,
-                        "palavras": [
-                                    "PORTE ILEGAL DE ARMA LEVE",
-                                    "ARMA DE FOGO LEVE",
-                                    "PISTOLA",
-                                    "REVOLVER"
-                        ]
-            },
-            {
-                        "art": "33",
-                        "crime": "PORTE ILEGAL DE ARMA DE FOGO MÉDIO",
-                        "pena": 25,
-                        "palavras": [
-                                    "PORTE ILEGAL DE ARMA MEDIO",
-                                    "ARMA DE FOGO MEDIO",
-                                    "SUBMETRALHADORA",
-                                    "ESCOPETA",
-                                    "TEC NINE"
-                        ]
-            },
-            {
-                        "art": "34",
-                        "crime": "PORTE ILEGAL DE ARMAS DE FOGO PESADO",
-                        "pena": 35,
-                        "palavras": [
-                                    "PORTE ILEGAL DE ARMA PESADO",
-                                    "ARMA DE FOGO PESADO",
-                                    "FUZIL",
-                                    "RIFLE",
-                                    "METRALHADORA"
-                        ]
-            },
-            {
-                        "art": "35",
-                        "crime": "PORTE ILEGAL DE MUNIÇÃO",
-                        "pena": 30,
-                        "palavras": [
-                                    "PORTE ILEGAL DE MUNICAO",
-                                    "MUNICAO ILEGAL"
-                        ]
-            },
-            {
-                        "art": "36",
-                        "crime": "POSSE DE DINHEIRO MARCADO",
-                        "pena": 30,
-                        "palavras": [
-                                    "DINHEIRO MARCADO",
-                                    "DINHEIRO SUJO"
-                        ]
-            },
-            {
-                        "art": "37",
-                        "crime": "EQUIPAMENTO POLICIAL OU BALÍSTICO",
-                        "pena": 30,
-                        "palavras": [
-                                    "EQUIPAMENTO POLICIAL",
-                                    "EQUIPAMENTO BALISTICO",
-                                    "COLETE",
-                                    "TRAJE POLICIAL"
-                        ]
-            },
-            {
-                        "art": "38",
-                        "crime": "ALGEMA",
-                        "pena": 10,
-                        "palavras": [
-                                    "ALGEMA",
-                                    "ALGEMAS"
-                        ]
-            },
-            {
-                        "art": "40",
-                        "crime": "USAR CAPUZ PARA FINS ILEGAIS",
-                        "pena": 25,
-                        "palavras": [
-                                    "CAPUZ",
-                                    "USAR CAPUZ",
-                                    "CAPUZ PARA FINS ILEGAIS"
-                        ]
-            },
-            {
-                        "art": "41",
-                        "crime": "COLDRE",
-                        "pena": 10,
-                        "palavras": [
-                                    "COLDRE"
-                        ]
-            },
-            {
-                        "art": "42",
-                        "crime": "LAVAGEM DE DINHEIRO",
-                        "pena": 180,
-                        "palavras": [
-                                    "LAVAGEM DE DINHEIRO"
-                        ]
-            },
-            {
-                        "art": "43",
-                        "crime": "PÓLVORA",
-                        "pena": 40,
-                        "palavras": [
-                                    "POLVORA"
-                        ]
-            },
-            {
-                        "art": "44",
-                        "crime": "ITENS EXPLOSIVOS E INCENDIÁRIOS (C4 E MOLOTOV)",
-                        "pena": 50,
-                        "palavras": [
-                                    "C4",
-                                    "MOLOTOV",
-                                    "ITENS EXPLOSIVOS",
-                                    "EXPLOSIVO",
-                                    "INCENDIARIO"
-                        ]
-            },
-            {
-                        "art": "53",
-                        "crime": "ATROPELAMENTO CULPOSO",
-                        "pena": 10,
-                        "palavras": [
-                                    "ATROPELAMENTO CULPOSO",
-                                    "ATROPELAMENTO"
-                        ]
-            },
-            {
-                        "art": "53-A",
-                        "crime": "ATROPELAMENTO COLETIVO",
-                        "pena": 20,
-                        "palavras": [
-                                    "ATROPELAMENTO COLETIVO"
-                        ]
-            },
-            {
-                        "art": "56",
-                        "crime": "COLOCAR CIVIS EM RISCO DURANTE O VOO",
-                        "pena": 25,
-                        "palavras": [
-                                    "CIVIS EM RISCO DURANTE O VOO",
-                                    "COLOCAR CIVIS EM RISCO"
-                        ]
-            },
-            {
-                        "art": "57",
-                        "crime": "DESOBEDIÊNCIA À ORDEM AÉREA POLICIAL",
-                        "pena": 30,
-                        "palavras": [
-                                    "DESOBEDIENCIA A ORDEM AEREA",
-                                    "ORDEM AEREA POLICIAL"
-                        ]
-            },
-            {
-                        "art": "57-A",
-                        "crime": "FUGA AÉREA DA POLÍCIA",
-                        "pena": 40,
-                        "palavras": [
-                                    "FUGA AEREA",
-                                    "FUGA AEREA DA POLICIA"
-                        ]
-            },
-            {
-                        "art": "58",
-                        "crime": "USO DE HELICÓPTERO/AERONAVE EM ATIVIDADE CRIMINOSA",
-                        "pena": 40,
-                        "palavras": [
-                                    "HELICOPTERO EM ATIVIDADE CRIMINOSA",
-                                    "AERONAVE EM ATIVIDADE CRIMINOSA"
-                        ]
-            },
-            {
-                        "art": "58-A",
-                        "crime": "TRANSPORTE AÉREO DE CRIMINOSOS OU ITENS ILEGAIS",
-                        "pena": 35,
-                        "palavras": [
-                                    "TRANSPORTE AEREO DE CRIMINOSOS",
-                                    "TRANSPORTE AEREO DE ITENS ILEGAIS"
-                        ]
-            },
-            {
-                        "art": "60",
-                        "crime": "PLACA CLONADA",
-                        "pena": 30,
-                        "palavras": [
-                                    "PLACA CLONADA"
-                        ]
-            },
-            {
-                        "art": "62",
-                        "crime": "FURTO",
-                        "pena": 30,
-                        "palavras": [
-                                    "FURTO",
-                                    "FURTAR"
-                        ]
-            },
-            {
-                        "art": "63",
-                        "crime": "ROUBO",
-                        "pena": 35,
-                        "palavras": [
-                                    "ROUBO",
-                                    "ROUBAR"
-                        ]
-            },
-            {
-                        "art": "63-A",
-                        "crime": "ROUBO DE HELICÓPTERO",
-                        "pena": 30,
-                        "palavras": [
-                                    "ROUBO DE HELICOPTERO"
-                        ]
-            },
-            {
-                        "art": "64",
-                        "crime": "RECEPTAÇÃO",
-                        "pena": 20,
-                        "palavras": [
-                                    "RECEPTACAO",
-                                    "RECEPTAR"
-                        ]
-            },
-            {
-                        "art": "65",
-                        "crime": "INVASÃO DE PROPRIEDADE",
-                        "pena": 20,
-                        "palavras": [
-                                    "INVASAO DE PROPRIEDADE",
-                                    "INVASAO"
-                        ]
-            },
-            {
-                        "art": "66",
-                        "crime": "DESMANCHE DE PEÇAS DE VEÍCULOS FURTADOS",
-                        "pena": 45,
-                        "palavras": [
-                                    "DESMANCHE",
-                                    "PECAS DE VEICULOS FURTADOS",
-                                    "DESMANCHE DE PECAS"
-                        ]
-            },
-            {
-                        "art": "67",
-                        "crime": "ASSALTO À RESIDÊNCIA",
-                        "pena": 20,
-                        "palavras": [
-                                    "ASSALTO A RESIDENCIA",
-                                    "RESIDENCIA"
-                        ]
-            },
-            {
-                        "art": "68",
-                        "crime": "ASSALTO CAIXA/ATM",
-                        "pena": 20,
-                        "palavras": [
-                                    "ASSALTO CAIXA",
-                                    "ASSALTO ATM",
-                                    "CAIXA ATM"
-                        ]
-            },
-            {
-                        "art": "69",
-                        "crime": "ASSALTO À CAIXA RG.",
-                        "pena": 15,
-                        "palavras": [
-                                    "ASSALTO A CAIXA RG",
-                                    "CAIXA RG"
-                        ]
-            },
-            {
-                        "art": "70",
-                        "crime": "ASSALTO A LOJA DE TATUAGEM",
-                        "pena": 25,
-                        "palavras": [
-                                    "ASSALTO A LOJA DE TATUAGEM",
-                                    "LOJA DE TATUAGEM",
-                                    "TATUAGEM"
-                        ]
-            },
-            {
-                        "art": "71",
-                        "crime": "ASSALTO A BARBEARIA",
-                        "pena": 30,
-                        "palavras": [
-                                    "ASSALTO A BARBEARIA",
-                                    "BARBEARIA"
-                        ]
-            },
-            {
-                        "art": "71-B",
-                        "crime": "ASSALTO A BARBEARIA COM REFÉNS",
-                        "pena": 35,
-                        "palavras": [
-                                    "ASSALTO A BARBEARIA COM REFEM",
-                                    "BARBEARIA COM REFEM"
-                        ]
-            },
-            {
-                        "art": "72",
-                        "crime": "ASSALTO À AMMUNITION",
-                        "pena": 30,
-                        "palavras": [
-                                    "ASSALTO A AMMUNITION",
-                                    "AMMUNITION"
-                        ]
-            },
-            {
-                        "art": "73",
-                        "crime": "ASSALTO A LOJA DE BEBIDAS",
-                        "pena": 35,
-                        "palavras": [
-                                    "ASSALTO A LOJA DE BEBIDAS",
-                                    "LOJA DE BEBIDAS"
-                        ]
-            },
-            {
-                        "art": "74",
-                        "crime": "ASSALTO À LOJA DE DEPARTAMENTO",
-                        "pena": 40,
-                        "palavras": [
-                                    "ASSALTO A LOJA DE DEPARTAMENTO",
-                                    "LOJA DE DEPARTAMENTO"
-                        ]
-            },
-            {
-                        "art": "74-A",
-                        "crime": "ASSALTO A LOJA DE DEPARTAMENTOS COM REFÉM",
-                        "pena": 45,
-                        "palavras": [
-                                    "LOJA DE DEPARTAMENTOS COM REFEM",
-                                    "DEPARTAMENTO COM REFEM"
-                        ]
-            },
-            {
-                        "art": "75",
-                        "crime": "ASSALTO AO COMEDY",
-                        "pena": 45,
-                        "palavras": [
-                                    "ASSALTO AO COMEDY",
-                                    "COMEDY"
-                        ]
-            },
-            {
-                        "art": "76",
-                        "crime": "ASSALTO AO MERGULHADOR",
-                        "pena": 50,
-                        "palavras": [
-                                    "ASSALTO AO MERGULHADOR",
-                                    "MERGULHADOR"
-                        ]
-            },
-            {
-                        "art": "77",
-                        "crime": "ASSALTO AO CEMITÉRIO DE AVIÃO",
-                        "pena": 50,
-                        "palavras": [
-                                    "ASSALTO AO CEMITERIO DE AVIAO",
-                                    "CEMITERIO DE AVIAO"
-                        ]
-            },
-            {
-                        "art": "78",
-                        "crime": "ASSALTO A GRAPESEED",
-                        "pena": 50,
-                        "palavras": [
-                                    "ASSALTO A GRAPESEED",
-                                    "GRAPESEED"
-                        ]
-            },
-            {
-                        "art": "79",
-                        "crime": "ASSALTO A SHOPPING KORTS",
-                        "pena": 60,
-                        "palavras": [
-                                    "ASSALTO A SHOPPING KORTS",
-                                    "SHOPPING KORTS"
-                        ]
-            },
-            {
-                        "art": "80",
-                        "crime": "ASSALTO À AÇOUGUE/GALINHEIRO",
-                        "pena": 60,
-                        "palavras": [
-                                    "ASSALTO A ACOUGUE",
-                                    "ASSALTO A GALINHEIRO",
-                                    "ACOUGUE",
-                                    "GALINHEIRO"
-                        ]
-            },
-            {
-                        "art": "81",
-                        "crime": "ASSALTO A JOALHERIA",
-                        "pena": 80,
-                        "palavras": [
-                                    "ASSALTO A JOALHERIA",
-                                    "JOALHERIA"
-                        ]
-            },
-            {
-                        "art": "81-A",
-                        "crime": "ASSALTO A JOALHERIA COM REFÉM",
-                        "pena": 110,
-                        "palavras": [
-                                    "JOALHERIA COM REFEM",
-                                    "ASSALTO A JOALHERIA COM REFEM"
-                        ]
-            },
-            {
-                        "art": "82",
-                        "crime": "ASSALTO A BANCO FLEECA",
-                        "pena": 90,
-                        "palavras": [
-                                    "ASSALTO A BANCO FLEECA",
-                                    "BANCO FLEECA",
-                                    "FLEECA"
-                        ]
-            },
-            {
-                        "art": "82-A",
-                        "crime": "ASSALTO A FLEECA COM REFÉM",
-                        "pena": 120,
-                        "palavras": [
-                                    "FLEECA COM REFEM",
-                                    "BANCO FLEECA COM REFEM"
-                        ]
-            },
-            {
-                        "art": "83",
-                        "crime": "ASSALTO A BANCO DE PALETO",
-                        "pena": 150,
-                        "palavras": [
-                                    "ASSALTO A BANCO DE PALETO",
-                                    "BANCO DE PALETO",
-                                    "PALETO"
-                        ]
-            },
-            {
-                        "art": "83-A",
-                        "crime": "ASSALTO A BANCO DE PALETO COM REFÉM",
-                        "pena": 180,
-                        "palavras": [
-                                    "BANCO DE PALETO COM REFEM",
-                                    "PALETO COM REFEM"
-                        ]
-            },
-            {
-                        "art": "84",
-                        "crime": "ASSALTO AO BANCO CENTRAL",
-                        "pena": 180,
-                        "palavras": [
-                                    "ASSALTO AO BANCO CENTRAL",
-                                    "BANCO CENTRAL"
-                        ]
-            },
-            {
-                        "art": "84-A",
-                        "crime": "ASSALTO AO BANCO CENTRAL COM REFÉM",
-                        "pena": 210,
-                        "palavras": [
-                                    "BANCO CENTRAL COM REFEM"
-                        ]
-            },
-            {
-                        "art": "85",
-                        "crime": "ASSALTO AO PORTA AVIÕES",
-                        "pena": 180,
-                        "palavras": [
-                                    "ASSALTO AO PORTA AVIOES",
-                                    "PORTA AVIOES"
-                        ]
-            },
-            {
-                        "art": "86",
-                        "crime": "ASSALTO AO LABORATÓRIO HUMANE",
-                        "pena": 180,
-                        "palavras": [
-                                    "ASSALTO AO LABORATORIO HUMANE",
-                                    "LABORATORIO HUMANE",
-                                    "HUMANE"
-                        ]
-            },
-            {
-                        "art": "87",
-                        "crime": "PREVARICAÇÃO",
-                        "pena": 60,
-                        "palavras": [
-                                    "PREVARICACAO"
-                        ]
-            },
-            {
-                        "art": "88",
-                        "crime": "CONCUSSÃO",
-                        "pena": 45,
-                        "palavras": [
-                                    "CONCUSSAO"
-                        ]
-            },
-            {
-                        "art": "89",
-                        "crime": "CORRUPÇÃO PASSIVA",
-                        "pena": 45,
-                        "palavras": [
-                                    "CORRUPCAO PASSIVA"
-                        ]
-            },
-            {
-                        "art": "90",
-                        "crime": "CORRUPÇÃO ATIVA / SUBORNO",
-                        "pena": 50,
-                        "palavras": [
-                                    "CORRUPCAO ATIVA",
-                                    "SUBORNO",
-                                    "PROPINA"
-                        ]
-            },
-            {
-                        "art": "91",
-                        "crime": "DESACATO À AUTORIDADE",
-                        "pena": 10,
-                        "palavras": [
-                                    "DESACATO",
-                                    "DESACATO A AUTORIDADE"
-                        ]
-            },
-            {
-                        "art": "92",
-                        "crime": "DESOBEDIÊNCIA À ORDEM LEGAL / RESISTÊNCIA A PRISÃO",
-                        "pena": 20,
-                        "palavras": [
-                                    "DESOBEDIENCIA A ORDEM LEGAL",
-                                    "RESISTENCIA A PRISAO",
-                                    "RESISTENCIA"
-                        ]
-            },
-            {
-                        "art": "93",
-                        "crime": "TENTATIVA DE FUGA DE ABORDAGEM POLICIAL",
-                        "pena": 20,
-                        "palavras": [
-                                    "TENTATIVA DE FUGA",
-                                    "FUGA DE ABORDAGEM"
-                        ]
-            },
-            {
-                        "art": "94",
-                        "crime": "FUGA DA PRISÃO",
-                        "pena": 30,
-                        "palavras": [
-                                    "FUGA DA PRISAO"
-                        ]
-            },
-            {
-                        "art": "95",
-                        "crime": "OBSTRUÇÃO DA JUSTIÇA",
-                        "pena": 30,
-                        "palavras": [
-                                    "OBSTRUCAO DA JUSTICA"
-                        ]
-            },
-            {
-                        "art": "96",
-                        "crime": "MULTAS PENDENTES",
-                        "pena": 30,
-                        "palavras": [
-                                    "MULTAS PENDENTES",
-                                    "MULTA PENDENTE"
-                        ]
-            },
-            {
-                        "art": "97",
-                        "crime": "USURPAÇÃO DE FUNÇÃO PÚBLICA",
-                        "pena": 35,
-                        "palavras": [
-                                    "USURPACAO DE FUNCAO PUBLICA",
-                                    "USURPACAO"
-                        ]
-            }
-];
+            const valorTrocaNome = 65000;
+            let valorLimpeza = 0;
+            let valorAdvLimpeza = 0;
+            let valorJurLimpeza = 0;
 
-        function normalizarTexto(str) {
-            return (str || "")
-                .toUpperCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[|()[\]{}:;,.]/g, " ")
-                .replace(/\s*-+\s*/g, "-")
-                .replace(/[^A-Z0-9\s\-\/]/g, " ")
-                .replace(/\s+/g, " ")
-                .trim();
-        }
+            if (faixaInput && valorInput) {
+                const faixa = faixaInput.value || '≤ 150 meses preso';
 
-        function escaparRegex(str) {
-            return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        }
-
-        function artigoFlexivel(art) {
-            const a = normalizarTexto(art).replace(/\s+/g, "");
-            if (a.includes("-")) {
-                const [num, letra] = a.split("-");
-                return `${escaparRegex(num)}\\s*-?\\s*${escaparRegex(letra)}`;
-            }
-            return escaparRegex(a);
-        }
-
-        function montarPadroesCrime(item) {
-            const termos = new Set([item.crime, ...(item.palavras || [])]);
-            item.crime.split("/").forEach(p => termos.add(p));
-            return Array.from(termos)
-                .map(normalizarTexto)
-                .filter(t => t.length >= 3)
-                .sort((a, b) => b.length - a.length);
-        }
-
-        function distanciaLevenshtein(a, b) {
-            a = normalizarTexto(a);
-            b = normalizarTexto(b);
-            const matriz = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
-            for (let i = 0; i <= a.length; i++) matriz[i][0] = i;
-            for (let j = 0; j <= b.length; j++) matriz[0][j] = j;
-            for (let i = 1; i <= a.length; i++) {
-                for (let j = 1; j <= b.length; j++) {
-                    const custo = a[i - 1] === b[j - 1] ? 0 : 1;
-                    matriz[i][j] = Math.min(
-                        matriz[i - 1][j] + 1,
-                        matriz[i][j - 1] + 1,
-                        matriz[i - 1][j - 1] + custo
-                    );
-                }
-            }
-            return matriz[a.length][b.length];
-        }
-
-        function similaridadeTexto(a, b) {
-            a = normalizarTexto(a);
-            b = normalizarTexto(b);
-            if (!a || !b) return 0;
-
-            if (a.includes(b) || b.includes(a)) return 0.95;
-
-            const palavrasA = new Set(a.split(" ").filter(w => w.length > 2));
-            const palavrasB = new Set(b.split(" ").filter(w => w.length > 2));
-            let inter = 0;
-            palavrasB.forEach(w => { if (palavrasA.has(w)) inter++; });
-            const scorePalavras = palavrasB.size ? inter / palavrasB.size : 0;
-
-            const menor = a.length < b.length ? a : b;
-            const maior = a.length >= b.length ? a : b;
-            let melhorDist = distanciaLevenshtein(maior.slice(0, Math.min(maior.length, menor.length + 8)), menor);
-            const scoreEdicao = Math.max(0, 1 - (melhorDist / Math.max(maior.length, menor.length)));
-
-            return Math.max(scorePalavras, scoreEdicao);
-        }
-
-        function dividirLinhasOCR(textoOCR) {
-            const linhasOriginais = (textoOCR || "")
-                .split(/\n|<br>|•|;/gi)
-                .map(l => l.trim())
-                .filter(l => l.length > 0);
-
-            const linhas = linhasOriginais.map(normalizarTexto).filter(l => l.length > 0);
-
-            // Também cria blocos com 2 e 3 linhas juntas, para casos em que o OCR quebra o crime no meio.
-            const blocos = [...linhas];
-            for (let i = 0; i < linhas.length - 1; i++) blocos.push(`${linhas[i]} ${linhas[i + 1]}`);
-            for (let i = 0; i < linhas.length - 2; i++) blocos.push(`${linhas[i]} ${linhas[i + 1]} ${linhas[i + 2]}`);
-
-            return blocos;
-        }
-
-        function extrairQuantidadeDaLinha(linha, termo, art) {
-            const termoEsc = escaparRegex(termo);
-            const artEsc = artigoFlexivel(art);
-
-            const padroes = [
-                new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*(?:ART\\.?|ARTIGO)?\\s*${artEsc}(?:\\s|$)`),
-                new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
-                new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*${termoEsc}(?:\\s|$)`),
-                new RegExp(`${termoEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
-                new RegExp(`(?:QTD|QTDE|QUANTIDADE)\\s*(\\d{1,2}).{0,20}${termoEsc}`),
-                new RegExp(`${termoEsc}.{0,20}(?:QTD|QTDE|QUANTIDADE)\\s*(\\d{1,2})`)
-            ];
-
-            for (const padrao of padroes) {
-                const m = linha.match(padrao);
-                if (m && m[1]) {
-                    const n = parseInt(m[1], 10);
-                    if (n > 0 && n <= 50) return n;
-                }
-            }
-            return 1;
-        }
-
-        function linhaTemArtigo(linha, art) {
-            const a = normalizarTexto(art).replace(/\s+/g, "");
-            let padrao;
-            if (a.includes("-")) {
-                const [num, letra] = a.split("-");
-                padrao = new RegExp(`(^|\\s)(ART\\.?|ARTIGO)?\\s*${escaparRegex(num)}\\s*-?\\s*${escaparRegex(letra)}(\\s|$)`);
-            } else {
-                padrao = new RegExp(`(^|\\s)(ART\\.?|ARTIGO)?\\s*${escaparRegex(a)}(\\s|$)`);
-            }
-            return padrao.test(linha);
-        }
-
-        function linhaTemCrimeExato(linha, item) {
-            const termos = montarPadroesCrime(item);
-            return termos.find(termo => {
-                if (termo.length < 4) return false;
-                const re = new RegExp(`(^|\\s)${escaparRegex(termo)}(\\s|$)`);
-                return re.test(linha);
-            }) || "";
-        }
-
-        function linhaPareceRegistroCriminal(linha) {
-            return (
-                /\b(ART|ARTIGO)\b/.test(linha) ||
-                /\b\d{1,2}\s*X\b/.test(linha) ||
-                /\bX\s*\d{1,2}\b/.test(linha) ||
-                /\b(MESES|MES|M)\b/.test(linha)
-            );
-        }
-
-        function extrairQuantidadeEstrita(linha) {
-            const padroes = [
-                /\b(\d{1,2})\s*X\b/,
-                /\bX\s*(\d{1,2})\b/,
-                /\b(?:QTD|QTDE|QUANTIDADE)\s*(\d{1,2})\b/
-            ];
-            for (const p of padroes) {
-                const m = linha.match(p);
-                if (m && m[1]) {
-                    const n = parseInt(m[1], 10);
-                    if (n > 0 && n <= 50) return n;
-                }
-            }
-            return 1;
-        }
-
-        function removerDuplicadosPorSobreposicao(encontrados) {
-            const porArt = new Map();
-            encontrados.forEach(item => {
-                const atual = porArt.get(item.art);
-                if (!atual) {
-                    porArt.set(item.art, item);
+                if (faixa.includes('500')) {
+                    valorLimpeza = 150000;
+                } else if (faixa.includes('300')) {
+                    valorLimpeza = 100000;
                 } else {
-                    atual.quantidade = Math.max(atual.quantidade, item.quantidade);
-                    atual.confianca = Math.max(atual.confianca, item.confianca);
-                    atual.origens = Array.from(new Set([...(atual.origens || []), ...(item.origens || [])]));
-                    atual.motivos = Array.from(new Set([...(atual.motivos || []), ...(item.motivos || [])]));
+                    valorLimpeza = 50000;
                 }
-            });
 
-            const lista = Array.from(porArt.values());
-            const arts = new Set(lista.map(i => i.art));
-            return lista.filter(item => {
-                if (!String(item.art).includes("-")) {
-                    return !Array.from(arts).some(a => String(a).startsWith(item.art + "-"));
-                }
-                return true;
-            });
-        }
-
-        function analisarFichaCriminal(textoOCR) {
-            const linhas = (textoOCR || "")
-                .split(/\n|<br>|•|;/gi)
-                .map(normalizarTexto)
-                .filter(l => l.length > 0);
-
-            const candidatos = [];
-
-            linhas.forEach(linha => {
-                if (!linhaPareceRegistroCriminal(linha)) return;
-
-                baseCrimesLongBeach.forEach(item => {
-                    const artigoAchado = linhaTemArtigo(linha, item.art);
-                    const termoAchado = linhaTemCrimeExato(linha, item);
-
-                    if (!artigoAchado && !termoAchado) return;
-
-                    const qtd = extrairQuantidadeEstrita(linha);
-                    const confianca = artigoAchado && termoAchado ? 0.98 : artigoAchado ? 0.92 : 0.86;
-
-                    candidatos.push({
-                        ...item,
-                        quantidade: qtd,
-                        confianca,
-                        origens: [linha],
-                        motivos: [artigoAchado ? "ARTIGO EXPLÍCITO NA FICHA" : "NOME EXATO DO CRIME NA FICHA"]
-                    });
-                });
-            });
-
-            const semDuplicados = removerDuplicadosPorSobreposicao(candidatos);
-
-            const encontrados = semDuplicados.map(item => ({
-                ...item,
-                subtotal: item.quantidade * item.pena,
-                confiancaTexto: item.confianca >= 0.95 ? "ALTA" : item.confianca >= 0.88 ? "MÉDIA" : "BAIXA",
-                motivoTexto: Array.from(new Set(item.motivos || [])).join(" / ")
-            })).sort((a, b) => {
-                const na = parseInt(String(a.art).match(/\d+/)?.[0] || "0", 10);
-                const nb = parseInt(String(b.art).match(/\d+/)?.[0] || "0", 10);
-                if (na !== nb) return na - nb;
-                return String(a.art).localeCompare(String(b.art));
-            });
-
-            const totalBruto = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
-            const totalMeses = Math.min(totalBruto, 800);
-
-            return { totalMeses, totalBruto, encontrados };
-        }
-
-        let imagemFichaOriginal = null;
-        let selecaoFicha = null;
-        let recorteAutomaticoFicha = null;
-
-        function carregarImagemArquivo(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                const reader = new FileReader();
-                reader.onload = e => {
-                    img.onload = () => resolve(img);
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function prepararImagemFicha(event) {
-            const file = event.target.files[0];
-            const nomeArquivo = document.getElementById('nome-arquivo');
-            const areaRecorte = document.getElementById('area-recorte-ficha');
-            const debugOCR = document.getElementById('texto-ocr-debug');
-
-            if (!file) return;
-
-            nomeArquivo.innerText = file.name;
-            statusDiv.innerText = "🔄 CARREGANDO IMAGEM INTEIRA PARA ANÁLISE...";
-            if (resultadoCrimes) resultadoCrimes.innerText = "";
-            if (debugOCR) {
-                debugOCR.innerText = "";
-                debugOCR.classList.add("hidden");
+                valorAdvLimpeza = Math.round(valorLimpeza * 0.70);
+                valorJurLimpeza = Math.round(valorLimpeza * 0.30);
             }
 
-            imagemFichaOriginal = await carregarImagemArquivo(file);
-            selecaoFicha = null;
-            recorteAutomaticoFicha = detectarAreaFichaCriminal(imagemFichaOriginal);
+            const formatar = (num) => num.toLocaleString('pt-BR');
 
-            desenharPreviewFicha();
-            areaRecorte.classList.remove("hidden");
+            if (valorInput) valorInput.value = formatar(valorLimpeza || 50000);
+            if (valorAdvInput) valorAdvInput.value = formatar(valorAdvLimpeza || 35000);
+            if (valorJurInput) valorJurInput.value = formatar(valorJurLimpeza || 15000);
 
-            statusDiv.innerText = "✅ IMAGEM CARREGADA. INICIANDO ANÁLISE AUTOMÁTICA DA IMAGEM INTEIRA...";
-            await analisarAreaFichaSelecionada();
-        }
+            if (escolha === "1") {
+                const fichaLimpaVal = document.getElementById('input-ficha_limpa')?.value;
 
-        function detectarAreaFichaCriminal(img) {
-            // Usa a imagem inteira, sem recorte pequeno.
-            return {
-                x: 0,
-                y: 0,
-                w: img.width,
-                h: img.height
-            };
-        }
-
-        function desenharPreviewFicha() {
-            if (!imagemFichaOriginal) return;
-
-            const canvas = document.getElementById("preview-ficha");
-            const ctx = canvas.getContext("2d");
-
-            const maxW = 900;
-            const escala = Math.min(1, maxW / imagemFichaOriginal.width);
-            canvas.width = Math.round(imagemFichaOriginal.width * escala);
-            canvas.height = Math.round(imagemFichaOriginal.height * escala);
-            canvas.dataset.escala = escala;
-
-            ctx.drawImage(imagemFichaOriginal, 0, 0, canvas.width, canvas.height);
-
-            const r = selecaoFicha || recorteAutomaticoFicha;
-            if (r) {
-                ctx.save();
-                ctx.fillStyle = "rgba(0,0,0,0.45)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const sx = r.x * escala, sy = r.y * escala, sw = r.w * escala, sh = r.h * escala;
-                ctx.clearRect(sx, sy, sw, sh);
-                ctx.drawImage(imagemFichaOriginal, r.x, r.y, r.w, r.h, sx, sy, sw, sh);
-
-                ctx.strokeStyle = "#38bdf8";
-                ctx.lineWidth = 3;
-                ctx.strokeRect(sx, sy, sw, sh);
-                ctx.restore();
+                if (fichaLimpaVal === "Não") {
+                    if (totalAdvInput) totalAdvInput.value = formatar(valorTrocaNome + valorAdvLimpeza);
+                    if (totalJurInput) totalJurInput.value = formatar(valorJurLimpeza);
+                } else {
+                    if (totalAdvInput) totalAdvInput.value = formatar(valorTrocaNome);
+                    if (totalJurInput) totalJurInput.value = '0';
+                }
             }
-
-            ativarSelecaoManualFicha(canvas);
-        }
-
-        function ativarSelecaoManualFicha(canvas) {
-            // Seleção manual removida: o sistema usa sempre o recorte automático da área de FICHA CRIMINAL.
-            canvas.style.cursor = "default";
-        }
-
-        function limparSelecaoFicha() {
-            // Mantido apenas por compatibilidade, sem ação.
-            selecaoFicha = null;
-        }
-
-        function recortarImagemFicha(img, area) {
-            return new Promise((resolve) => {
-                const canvas = document.createElement('canvas');
-                const margem = 6;
-
-                const x = Math.max(0, area.x - margem);
-                const y = Math.max(0, area.y - margem);
-                const w = Math.min(img.width - x, area.w + margem * 2);
-                const h = Math.min(img.height - y, area.h + margem * 2);
-
-                const escala = Math.max(1, Math.min(3, 1800 / Math.max(w, h)));
-
-                canvas.width = Math.round(w * escala);
-                canvas.height = Math.round(h * escala);
-
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, x, y, w, h, 0, 0, canvas.width, canvas.height);
-
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-
-                for (let i = 0; i < data.length; i += 4) {
-                    let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                    gray = gray > 150 ? 255 : 0;
-                    data[i] = data[i + 1] = data[i + 2] = gray;
-                }
-
-                ctx.putImageData(imageData, 0, 0);
-                canvas.toBlob(blob => resolve(blob), 'image/png');
-            });
-        }
-
-        function filtrarTextoSomenteFichaCriminal(textoOCR) {
-            const linhas = (textoOCR || "").split(/\n/).map(l => l.trim()).filter(Boolean);
-            const normalizadas = linhas.map(normalizarTexto);
-
-            const linhasCrime = linhas.filter((linha, i) => {
-                const l = normalizadas[i];
-                if (!l) return false;
-
-                if (/(NOME|PASSAPORTE|TELEFONE|RG|IDADE|NACIONALIDADE|SEXO|ENDERECO|EMPREGO|REGISTRO|OBSERVACAO|HISTORICO|CIDADE|DINHEIRO|BANCO:)/.test(l)) return false;
-
-                const temFormatoCrime = /\b(ART|ARTIGO)\b/.test(l) || /\b\d{1,2}\s*X\b/.test(l) || /\bX\s*\d{1,2}\b/.test(l) || /\b(MESES|MES|M)\b/.test(l);
-                const temCrimeExato = baseCrimesLongBeach.some(item => linhaTemCrimeExato(l, item));
-
-                return temFormatoCrime || temCrimeExato;
-            });
-
-            return linhasCrime.join("\n");
-        }
-
-        async function analisarAreaFichaSelecionada() {
-            const debugOCR = document.getElementById('texto-ocr-debug');
-
-            if (!imagemFichaOriginal) {
-                statusDiv.innerText = "❌ ESCOLHA UMA IMAGEM PRIMEIRO.";
-                return;
-            }
-
-            try {
-                const area = recorteAutomaticoFicha || detectarAreaFichaCriminal(imagemFichaOriginal);
-
-                statusDiv.innerText = "🔄 IA LOCAL LENDO A IMAGEM INTEIRA E FILTRANDO APENAS LINHAS DE CRIMES...";
-                if (resultadoCrimes) resultadoCrimes.innerText = "";
-                if (debugOCR) {
-                    debugOCR.innerText = "";
-                    debugOCR.classList.add("hidden");
-                }
-
-                const imagemRecortada = await recortarImagemFicha(imagemFichaOriginal, area);
-
-                const { data: { text } } = await Tesseract.recognize(imagemRecortada, 'por+eng', {
-                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç0123456789-/ .,:;()',
-                    preserve_interword_spaces: '1'
-                });
-
-                const textoFicha = filtrarTextoSomenteFichaCriminal(text);
-                const analise = analisarFichaCriminal(textoFicha);
-
-                statusDiv.innerText = `✅ ANÁLISE FINALIZADA NA IMAGEM INTEIRA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
-
-                const penaInput = document.getElementById('input-pena_atual');
-                if (penaInput) {
-                    penaInput.value = `${analise.totalMeses}M`;
-                }
-
-                if (resultadoCrimes) {
-                    if (analise.encontrados.length === 0) {
-                        resultadoCrimes.innerText = "NENHUM CRIME FOI IDENTIFICADO DENTRO DA ÁREA DA FICHA CRIMINAL. SELECIONE MANUALMENTE APENAS A TABELA/LISTA DE CRIMES E TENTE NOVAMENTE.";
-                    } else {
-                        const linhas = analise.encontrados.map(item =>
-                            `${item.quantidade}X - ART. ${item.art} — ${item.crime} | PENA: ${item.pena}M CADA | SUBTOTAL: ${item.subtotal}M | CONFIANÇA: ${item.confiancaTexto} | ${item.motivoTexto}`
-                        );
-
-                        let avisoLimite = "";
-                        if (analise.totalBruto > 800) {
-                            avisoLimite = `\n\n⚠️ TOTAL BRUTO: ${analise.totalBruto}M\n⚖️ LIMITE DO CÓDIGO PENAL APLICADO: 800M`;
-                        }
-
-                        resultadoCrimes.innerText = linhas.join("\n") + `\n\nTOTAL DA FICHA: ${analise.totalMeses}M${avisoLimite}`;
-                    }
-                }
-
-                if (debugOCR) {
-                    debugOCR.innerText = "TEXTO LIDO NA IMAGEM INTEIRA:\n\n" + textoFicha;
-                    debugOCR.classList.remove("hidden");
-                }
-            } catch (err) {
-                statusDiv.innerText = "❌ FALHA AO ANALISAR A ÁREA DA FICHA CRIMINAL.";
-                if (resultadoCrimes) resultadoCrimes.innerText = "TENTE ENVIAR UM PRINT MAIS NÍTIDO COM A FICHA CRIMINAL COMPLETA.";
-            }
-        }
-
-        async function processarImagem(event) {
-            await prepararImagemFicha(event);
         }
 
         function gerarTemplate() {
@@ -1843,7 +614,7 @@ document.addEventListener('input', function(e){
             
             const pegarValor = (id) => document.getElementById(`input-${id}`)?.value || "XXXX";
 
-            // Se for Troca de nome com ficha suja, transforma no Requerimento Conjugado
+            // Se for Troca de Nome com ficha suja, transforma no Requerimento Conjugado
             if (escolha === "1" && pegarValor('ficha_limpa') === "Não") {
                 nomeReqAutomatico = "LIMPEZA DE FICHA & TROCA DE NOME";
             }
@@ -1852,19 +623,30 @@ document.addEventListener('input', function(e){
                 nomeReqAutomatico = "LIMPEZA DE FICHA & PORTE DE ARMA";
             }
 
-            let resultado = `**Advogado Responsável:** ${advNome}\n\n\`\`\`md\n`;
+            let resultado = `**ADVOGADO RESPONSÁVEL:** *${advNome}*
+
+\`\`\`md
+`;
 
             if (escolha === "1") {
                 resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
                              `[NOME ATUAL][${pegarValor('nome_atual')}]\n` +
                              `[NOME RETIFICADO][${pegarValor('nome_retificado')}]\n` +
                              `[ID DO REQUERENTE][${pegarValor('id_req')}]\n` +
-                             `[TELEFONE][${pegarValor('telefone')}]\n`;
-                
+                             `[TELEFONE][${pegarValor('telefone')}]\n` +
+                             `[POSSUI FICHA LIMPA?][${pegarValor('ficha_limpa')}]\n\n` +
+                             `[VALOR TROCA DE NOME][${pegarValor('valor_troca_nome')}]\n`;
+
                 if (pegarValor('ficha_limpa') === "Não") {
-                    resultado += `[PENA DETECTADA][${pegarValor('pena_atual')}]\n`;
+                    resultado += `\n[LIMPEZA DE FICHA]\n` +
+                                 `[TEMPO PRESO][${pegarValor('faixa_limpeza')}]\n` +
+                                 `[VALOR DA LIMPEZA][${pegarValor('valor_limpeza')}]\n` +
+                                 `[VALOR ADVOGADO LIMPEZA 70%][${pegarValor('valor_adv_limpeza')}]\n` +
+                                 `[VALOR JURIDICO LIMPEZA 30%][${pegarValor('valor_jur_limpeza')}]\n\n` +
+                                 `[TOTAL ADVOGADO NO PROCESSO][${pegarValor('total_adv_processo')}]\n` +
+                                 `[TOTAL JURIDICO NO PROCESSO][${pegarValor('total_jur_processo')}]\n`;
                 }
-                
+
                 resultado += `[MOTIVO][${pegarValor('motivo')}]\n` +
                              `[DATA][${pegarValor('data')}]`;
             } 
@@ -1914,12 +696,25 @@ document.addEventListener('input', function(e){
                              `[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
             }
             else if (escolha === "5") {
-                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
-                             `[NOME COMPLETO DO REQUERENTE][${pegarValor('nome_completo')}]\n` +
-                             `[ID DO REQUERENTE][${pegarValor('id_req')}]\n` +
-                             `[TELEFONE][${pegarValor('telefone')}]\n` +
-                             `[PENA DETECTADA][${pegarValor('pena_atual')}]\n` +
-                             `[MOTIVO][${pegarValor('motivo')}]\n` +
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]
+
+` +
+                             `[NOME COMPLETO DO REQUERENTE][${pegarValor('nome_completo')}]
+` +
+                             `[ID DO REQUERENTE][${pegarValor('id_req')}]
+` +
+                             `[TELEFONE][${pegarValor('telefone')}]
+` +
+                             `[TEMPO PRESO][${pegarValor('faixa_limpeza')}]
+` +
+                             `[VALOR DA LIMPEZA][${pegarValor('valor_limpeza')}]
+` +
+                             `[VALOR ADVOGADO 70%][${pegarValor('valor_adv_limpeza')}]
+` +
+                             `[VALOR JURIDICO 30%][${pegarValor('valor_jur_limpeza')}]
+` +
+                             `[MOTIVO][${pegarValor('motivo')}]
+` +
                              `[DATA][${pegarValor('data')}]`;
             }
             else if (escolha === "6") {
@@ -1943,8 +738,8 @@ document.addEventListener('input', function(e){
 
             resultado += `\n\`\`\``;
 
-            // CONVERTE TODO O TEMPLATE PARA CAIXA ALTA
-            resultado = resultado.toUpperCase();
+            
+            
 
             document.getElementById('output-template').value = resultado;
         }
