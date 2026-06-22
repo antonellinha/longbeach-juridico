@@ -1,95 +1,65 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Protocolos & Modelos - Long Beach</title>
     <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
-    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #0f172a; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; padding: 2rem 1rem; }
         .container { max-width: 1100px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
         h1 { color: #38bdf8; font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
-        header p { color: #94a3b8; font-size: 0.875rem; }
-        .grid-principal { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-        @media (min-width: 1024px) { .grid-principal { grid-template-columns: 1fr 2fr; } }
         .card { background-color: #1e293b; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); margin-bottom: 1.5rem; }
         h2 { font-size: 1.125rem; font-weight: 600; color: #38bdf8; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .grupo-campo { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; tracking: 0.05em; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; }
         input, select, textarea { width: 100%; background-color: #334155; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.65rem; font-size: 0.875rem; color: #fff; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
-        .campos-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        @media (min-width: 640px) { .campos-grid { grid-template-columns: 1fr 1fr; } }
-        .full-width { grid-column: span 1 / span 1; }
-        @media (min-width: 640px) { .full-width { grid-column: span 2 / span 2; } }
-        .seccao-divisor { grid-column: span 1 / span 1; border-bottom: 1px solid #334155; padding-bottom: 0.35rem; margin-top: 1.25rem; margin-bottom: 0.25rem; }
+        .seccao-divisor { grid-column: span 1 / span 1; border-bottom: 1px solid #334155; padding-bottom: 0.35rem; margin-top: 1.25rem; margin-bottom: 0.25rem; color: #38bdf8; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; }
         @media (min-width: 640px) { .seccao-divisor { grid-column: span 2 / span 2; } }
-        .seccao-divisor h3 { color: #38bdf8; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; }
-        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; margin-top: 1rem; text-transform: uppercase; }
-        .btn-gerar:hover { background-color: #10b981; }
-        .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .btn-copiar { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; resize: vertical; height: 350px; }
-        .btn-upload { background-color: #2563eb; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; display: inline-block; text-align: center; margin-top: 0.5rem; }
+        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; cursor: pointer; margin-top: 1rem; text-transform: uppercase; }
+        .btn-copiar { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; cursor: pointer; }
+        #output-template { background-color: #090d16; color: #34d399; font-family: monospace; padding: 1rem; border-radius: 0.5rem; width: 100%; height: 350px; }
         .hidden { display: none !important; }
-        .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <header>
-            <h1>Sistema de Protocolos & Modelos</h1>
-            <p>Long Beach Judicial Department</p>
-        </header>
-
-        <div class="grid-principal">
+        <header><h1>Sistema de Protocolos</h1></header>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
             <div>
                 <div class="card">
-                    <h2>⚖️ Identificação do Advogado</h2>
-                    <div class="grupo-campo">
-                        <label>Nome do Advogado</label>
-                        <input type="text" id="adv-nome" placeholder="Dr. Nome do Advogado">
-                    </div>
+                    <h2>⚖️ Advogado</h2>
+                    <input type="text" id="adv-nome" placeholder="Dr. Nome">
                 </div>
-
                 <div class="card">
-                    <div class="grupo-campo">
-                        <label>Selecione o Serviço:</label>
-                        <select id="select-template" onchange="alternarCampos()">
-                            <option value="1">1. Troca de Nome</option>
-                            <option value="2_adocao">2. Adoção</option>
-                            <option value="2_nascimento">2. Nascimento</option>
-                            <option value="3">3. Casamento</option>
-                            <option value="4">4. CNPJ (Abertura/Renovação)</option>
-                            <option value="5">5. Limpeza de Ficha</option>
-                            <option value="6">6. Porte de Arma</option>
-                        </select>
-                    </div>
+                    <label>Serviço:</label>
+                    <select id="select-template" onchange="alternarCampos()">
+                        <option value="1">1. Troca de Nome</option>
+                        <option value="2_adocao">2. Adoção</option>
+                        <option value="2_nascimento">2. Nascimento</option>
+                        <option value="3">3. Casamento</option>
+                        <option value="4">4. CNPJ</option>
+                        <option value="5">5. Limpeza de Ficha</option>
+                        <option value="6">6. Porte de Arma</option>
+                    </select>
                 </div>
-
                 <div id="area-ocr" class="card hidden">
-                    <h2 style="color: #eab308;">🔍 Análise Inteligente</h2>
-                    <label class="btn-upload">Escolher Ficheiro<input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="processarImagem(event)"></label>
-                    <div id="status-ocr" class="status-ia"></div>
+                    <h2 style="color: #eab308;">🔍 Análise de Ficha</h2>
+                    <input type="file" id="foto-crimes" accept="image/*" onchange="processarImagem(event)">
                 </div>
             </div>
-
             <div>
                 <div class="card">
-                    <h2 style="color: white; font-size: 1.25rem;">Dados do Requerimento</h2>
-                    <div id="campos-dinamicos" class="campos-grid"></div>
-                    <button onclick="gerarTemplate()" class="btn-gerar">Gerar Modelo Formatado</button>
+                    <h2>Dados</h2>
+                    <div id="campos-dinamicos" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"></div>
+                    <button class="btn-gerar" onclick="gerarTemplate()">Gerar Modelo</button>
                 </div>
-
                 <div class="card">
-                    <div class="flex-header">
-                        <h2>Modelo Pronto</h2>
-                        <button onclick="copiarTexto()" class="btn-copiar">📄 Copiar</button>
-                        <button onclick="enviarDiscord()" class="btn-copiar" style="background-color: #5865F2;">🚀 Enviar Discord</button>
+                    <div style="display:flex; justify-content:space-between;">
+                        <h2>Modelo</h2>
+                        <button class="btn-copiar" onclick="enviarDiscord()">🚀 Postar no Discord</button>
                     </div>
                     <textarea id="output-template" readonly></textarea>
                 </div>
@@ -98,123 +68,67 @@
     </div>
 
     <script>
+        const webhookUrl = "https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm";
+
         const layouts = {
             "1": [
-                { id: 'nome_atual', label: 'Nome Atual', placeholder: 'Nome Atual' },
-                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome Retificado' },
-                { id: 'id_req', label: 'ID do Requerente', placeholder: 'ID' },
-                { id: 'telefone', label: 'Telefone', placeholder: 'Telefone' },
-                { id: 'motivo', label: 'Motivo', placeholder: 'Motivo' },
-                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+                { type: 'seccao', label: 'Dados' },
+                { id: 'nome_atual', label: 'Nome Atual', placeholder: 'NOME' },
+                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'NOME' },
+                { id: 'id_req', label: 'ID', placeholder: 'ID' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'TEL' },
+                { id: 'ficha_limpa', label: 'Ficha Limpa?', type: 'select', options: ['SIM', 'NÃO'] },
+                { id: 'pena_atual', label: 'Pena (Se precisar limpeza)', placeholder: '0M' }
             ],
             "2_adocao": [
-                { id: 'nome_crianca', label: 'Nome Criança|Adulto', placeholder: 'Nome' },
-                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome' },
-                { id: 'id_crianca', label: 'ID Criança|Adulto', placeholder: 'ID' },
-                { id: 'pai_mae_1', label: 'Nome Responsável 1', placeholder: 'Nome' },
-                { id: 'id_pai_mae_1', label: 'ID Responsável 1', placeholder: 'ID' },
-                { id: 'pai_mae_2', label: 'Nome Responsável 2', placeholder: 'Nome' },
-                { id: 'id_pai_mae_2', label: 'ID Responsável 2', placeholder: 'ID' },
-                { id: 'data_adocao', label: 'Data Adoção', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
-                { id: 'valor', label: 'Valor Total', placeholder: '100000' },
-                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Calculado', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Calculado', readonly: true },
-                { id: 'data_req', label: 'Data Requerimento', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' }
-            ],
-            "2_nascimento": [
-                { id: 'nome_crianca', label: 'Nome Criança', placeholder: 'Nome' },
-                { id: 'id_crianca', label: 'ID Criança', placeholder: 'ID' },
-                { id: 'pai_mae_1', label: 'Nome PAI|MÃE 1', placeholder: 'Nome' },
-                { id: 'id_pai_mae_1', label: 'ID PAI|MÃE 1', placeholder: 'ID' },
-                { id: 'pai_mae_2', label: 'Nome PAI|MÃE 2', placeholder: 'Nome' },
-                { id: 'id_pai_mae_2', label: 'ID PAI|MÃE 2', placeholder: 'ID' },
-                { id: 'medico', label: 'Nome Médico', placeholder: 'Nome' },
-                { id: 'id_medico', label: 'ID Médico', placeholder: 'ID' },
-                { id: 'data_nasc', label: 'Data Nascimento', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
-                { id: 'valor', label: 'Valor Total', placeholder: '100000' },
-                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Calculado', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Calculado', readonly: true }
-            ],
-            "3": [
-                { id: 'c1_nome', label: 'Nome Cônjuge 1', placeholder: 'Nome' },
-                { id: 'c1_id', label: 'ID Cônjuge 1', placeholder: 'ID' },
-                { id: 'c1_tel', label: 'Telefone 1', placeholder: 'Telefone' },
-                { id: 'c1_sexo', label: 'Sexo 1', placeholder: 'M/F' },
-                { id: 'c2_nome', label: 'Nome Cônjuge 2', placeholder: 'Nome' },
-                { id: 'c2_id', label: 'ID Cônjuge 2', placeholder: 'ID' },
-                { id: 'c2_tel', label: 'Telefone 2', placeholder: 'Telefone' },
-                { id: 'c2_sexo', label: 'Sexo 2', placeholder: 'M/F' },
-                { id: 'data_casamento', label: 'Data Casamento', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
-                { id: 'c1_nome_ret', label: 'Nome Ret. 1', placeholder: 'Nome' },
-                { id: 'c1_id_ret', label: 'ID Ret. 1', placeholder: 'ID' },
-                { id: 'c2_nome_ret', label: 'Nome Ret. 2', placeholder: 'Nome' },
-                { id: 'c2_id_ret', label: 'ID Ret. 2', placeholder: 'ID' },
-                { id: 'valor', label: 'Valor Total', placeholder: '100000' },
-                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Calculado', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Calculado', readonly: true }
-            ],
-            "4": [
-                { id: 'empresa', label: 'Empresa', placeholder: 'Nome' },
-                { id: 'socio1', label: 'Sócio 1', placeholder: 'Nome' },
-                { id: 'id_socio1', label: 'ID Sócio 1', placeholder: 'ID' },
-                { id: 'tel_socio1', label: 'Tel Sócio 1', placeholder: 'Telefone' },
-                { id: 'socio2', label: 'Sócio 2', placeholder: 'Nome' },
-                { id: 'id_socio2', label: 'ID Sócio 2', placeholder: 'ID' },
-                { id: 'tel_socio2', label: 'Tel Sócio 2', placeholder: 'Telefone' },
-                { id: 'solicitacao', label: 'Solicitação', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO', 'AUMENTO DE FUNCIONARIOS'] },
-                { id: 'num_func', label: 'Nº Funcionários', placeholder: '20' },
-                { id: 'descricao', label: 'Descrição', placeholder: 'Descrição' },
-                { id: 'valor', label: 'Valor Total', placeholder: '100000' },
-                { id: 'valor_jur', label: 'Valor Jurídico', placeholder: 'Calculado', readonly: true },
-                { id: 'valor_adv', label: 'Valor Advogado', placeholder: 'Calculado', readonly: true }
-            ],
-            "5": [
-                { id: 'nome_completo', label: 'Nome Completo', placeholder: 'Nome' },
+                { type: 'seccao', label: 'Criança' },
+                { id: 'nome_crianca', label: 'Nome', placeholder: 'NOME' },
                 { id: 'id_req', label: 'ID', placeholder: 'ID' },
-                { id: 'telefone', label: 'Telefone', placeholder: 'Telefone' },
-                { id: 'pena_atual', label: 'Pena Detectada', placeholder: '0M' },
-                { id: 'motivo', label: 'Motivo', placeholder: 'Motivo' },
-                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+                { type: 'seccao', label: 'Responsáveis' },
+                { id: 'pai_mae_1', label: 'Responsável 1', placeholder: 'NOME' },
+                { id: 'pai_mae_2', label: 'Responsável 2', placeholder: 'NOME' },
+                { type: 'seccao', label: 'Valores' },
+                { id: 'valor', label: 'Valor Total', placeholder: '1000' },
+                { id: 'valor_jur', label: 'Jurídico (50%)', placeholder: '0', readonly: true },
+                { id: 'valor_adv', label: 'Advogado (50%)', placeholder: '0', readonly: true }
             ],
             "6": [
-                { id: 'nome_completo', label: 'Nome Completo', placeholder: 'Nome' },
+                { type: 'seccao', label: 'Requerente' },
+                { id: 'nome_completo', label: 'Nome', placeholder: 'NOME' },
                 { id: 'id_req', label: 'ID', placeholder: 'ID' },
-                { id: 'telefone', label: 'Telefone', placeholder: 'Telefone' },
-                { id: 'ficha_limpa', label: 'Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
-                { id: 'pena_atual', label: 'Pena Detectada', placeholder: '0M' },
-                { id: 'armamento', label: 'Armamento', placeholder: 'Ex: M911, Mossberg' },
-                { id: 'motivo', label: 'Motivo', placeholder: 'Motivo' },
-                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+                { id: 'ficha_limpa', label: 'Ficha Limpa?', type: 'select', options: ['SIM', 'NÃO'] },
+                { id: 'pena_atual', label: 'Pena (Se precisar limpeza)', placeholder: '0M' },
+                { id: 'armamento', label: 'Armamento', placeholder: 'ARMAS' }
             ]
-        };
-
-        const nomesRequerimentos = {
-            "1": "TROCA DE NOME", "2_adocao": "ADOÇÃO", "2_nascimento": "NASCIMENTO", 
-            "3": "CASAMENTO", "4": "CNPJ", "5": "LIMPEZA DE FICHA", "6": "PORTE DE ARMA"
         };
 
         function alternarCampos() {
             const escolha = document.getElementById('select-template').value;
             const container = document.getElementById('campos-dinamicos');
             container.innerHTML = '';
+            
+            // Lógica de visualização do OCR
             const areaOcr = document.getElementById('area-ocr');
-            areaOcr.classList.toggle('hidden', !["5", "6"].includes(escolha));
+            areaOcr.classList.toggle('hidden', !['1','5','6'].includes(escolha));
 
-            layouts[escolha].forEach(c => {
-                const div = document.createElement('div');
-                div.innerHTML = `<label>${c.label}</label>${c.type==='select'?`<select id="input-${c.id}">${c.options.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`:`<input type="text" id="input-${c.id}" placeholder="${c.placeholder||''}" value="${c.valorFixo||''}" ${c.readonly?'readonly':''}>`}`;
-                container.appendChild(div);
+            layouts[escolha]?.forEach(c => {
+                if(c.type === 'seccao') {
+                    const div = document.createElement('div');
+                    div.className = 'seccao-divisor';
+                    div.innerText = c.label;
+                    container.appendChild(div);
+                } else {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<label>${c.label}</label>${c.type==='select'?`<select id="input-${c.id}">${c.options.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`:`<input type="text" id="input-${c.id}" placeholder="${c.placeholder||''}" ${c.readonly?'readonly':''}>`}`;
+                    container.appendChild(div);
+                }
             });
         }
 
         document.getElementById('campos-dinamicos').addEventListener('input', () => {
             const v = parseInt(document.getElementById('input-valor')?.value.replace(/[^0-9]/g,''))||0;
-            const s = document.getElementById('input-solicitacao')?.value;
-            const e = document.getElementById('select-template').value;
-            let a=0.5, j=0.5;
-            if(e==='4') { a=(s==='RENOVAÇÃO'?0.4:0.6); j=1-a; }
-            if(document.getElementById('input-valor_adv')) document.getElementById('input-valor_adv').value = Math.round(v*a).toLocaleString('pt-PT');
-            if(document.getElementById('input-valor_jur')) document.getElementById('input-valor_jur').value = Math.round(v*j).toLocaleString('pt-PT');
+            if(document.getElementById('input-valor_adv')) document.getElementById('input-valor_adv').value = Math.round(v*0.5).toLocaleString('pt-BR');
+            if(document.getElementById('input-valor_jur')) document.getElementById('input-valor_jur').value = Math.round(v*0.5).toLocaleString('pt-BR');
         });
 
         function gerarTemplate() {
@@ -222,24 +136,28 @@
             const adv = document.getElementById('adv-nome').value;
             let res = `**ADVOGADO:** ${adv}\n\n\`\`\`md\n`;
             document.querySelectorAll('#campos-dinamicos input, #campos-dinamicos select').forEach(el => {
-                const label = el.parentElement.querySelector('label').innerText;
-                res += `[${label.toUpperCase()}][${el.value.toUpperCase()}]\n`;
+                const label = el.parentElement.querySelector('label')?.innerText || '';
+                if(label) res += `[${label.toUpperCase()}][${el.value.toUpperCase()}]\n`;
             });
             res += "\n\`\`\`";
-            document.getElementById('output-template').value = res.toUpperCase();
+            document.getElementById('output-template').value = res;
         }
 
         async function enviarDiscord() {
             const content = document.getElementById('output-template').value;
-            await fetch("https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm", {
+            await fetch(webhookUrl, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ content: content })
             });
             alert('Enviado!');
         }
 
-        function copiarTexto() { document.getElementById('output-template').select(); document.execCommand('copy'); alert('Copiado!'); }
-        function processarImagem(e) { Tesseract.recognize(e.target.files[0],'por+eng').then(d=>{let t=0; [...d.data.text.matchAll(/(\d+)M/g)].forEach(m=>t+=parseInt(m[1])); document.getElementById('input-pena_atual').value=t+'M';}); }
+        function processarImagem(e) {
+            Tesseract.recognize(e.target.files[0],'por').then(d=>{
+                let t=0; [...d.data.text.matchAll(/(\d+)M/g)].forEach(m=>t+=parseInt(m[1]));
+                if(document.getElementById('input-pena_atual')) document.getElementById('input-pena_atual').value = t+'M';
+            });
+        }
         alternarCampos();
     </script>
 </body>
