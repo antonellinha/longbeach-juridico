@@ -1,132 +1,618 @@
+
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Protocolos - Long Beach</title>
+    <title>Sistema de Protocolos & Modelos - Long Beach</title>
+    <!-- Tesseract.js para leitura OCR local das capturas de ecrã das fichas criminais -->
     <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #0f172a; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; padding: 2rem 1rem; }
         .container { max-width: 1100px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
         h1 { color: #38bdf8; font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        header p { color: #94a3b8; font-size: 0.875rem; }
+        
         .grid-principal { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
         @media (min-width: 1024px) { .grid-principal { grid-template-columns: 1fr 2fr; } }
-        .card { background-color: #1e293b; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #334155; margin-bottom: 1.5rem; }
+        
+        .card { background-color: #1e293b; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); margin-bottom: 1.5rem; }
         h2 { font-size: 1.125rem; font-weight: 600; color: #38bdf8; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        
         .grupo-campo { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; }
-        input, select, textarea { width: 100%; background-color: #334155; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.65rem; font-size: 0.875rem; color: #fff; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; tracking: 0.05em; }
+        input, select, textarea { width: 100%; background-color: #334155; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.65rem; font-size: 0.875rem; color: #fff; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+        
         .campos-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         @media (min-width: 640px) { .campos-grid { grid-template-columns: 1fr 1fr; } }
-        .seccao-divisor { grid-column: span 1 / span 1; border-bottom: 1px solid #334155; padding-bottom: 0.35rem; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .full-width { grid-column: span 1 / span 1; }
+        @media (min-width: 640px) { .full-width { grid-column: span 2 / span 2; } }
+        
+        .seccao-divisor {
+            grid-column: span 1 / span 1;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.35rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
         @media (min-width: 640px) { .seccao-divisor { grid-column: span 2 / span 2; } }
-        .seccao-divisor h3 { color: #38bdf8; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
-        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; width: 100%; height: 350px; }
+        .seccao-divisor h3 {
+            color: #38bdf8;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; text-transform: uppercase; }
+        .btn-gerar:hover { background-color: #10b981; }
+        
+        .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .btn-copiar { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-copiar:hover { background-color: #475569; }
+        
+        #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; resize: vertical; height: 350px; }
+        
+        .btn-upload { background-color: #2563eb; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; display: inline-block; text-align: center; margin-top: 0.5rem; }
+        .btn-upload:hover { background-color: #1d4ed8; }
         .hidden { display: none !important; }
-        #toast-copy { position: fixed; bottom: 2rem; right: 2rem; background-color: #059669; color: #fff; padding: 1rem; border-radius: 0.5rem; transform: translateY(200%); transition: transform 0.3s; }
-        #toast-copy.show { transform: translateY(0); }
+        .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; font-weight: 500; }
+
+        /* Estilização moderna para o Toast Banner de Cópia */
+        #toast-copy {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #toast-copy.show {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <header><h1>Sistema de Protocolos</h1></header>
+        <header>
+            <h1>Sistema de Protocolos & Modelos</h1>
+            <p>Long Beach Judicial Department</p>
+        </header>
+
         <div class="grid-principal">
+            
             <div>
+                <!-- IDENTIFICAÇÃO DO ADVOGADO -->
                 <div class="card">
-                    <h2>⚖️ Identificação</h2>
-                    <input type="text" id="adv-nome" placeholder="NOME DO ADVOGADO">
+                    <h2>⚖️ Identificação do Advogado</h2>
+                    <div class="grupo-campo">
+                        <label>Nome do Advogado</label>
+                        <input type="text" id="adv-nome" placeholder="Ex: Dr. John Doe">
+                    </div>
                 </div>
+
+                <!-- SELEÇÃO DO SERVIÇO -->
                 <div class="card">
-                    <label>Selecione o Serviço:</label>
-                    <select id="select-template" onchange="alternarCampos()">
-                        <option value="1">1. Troca de Nome</option>
-                        <option value="2_adocao">2. Adoção</option>
-                        <option value="5">5. Limpeza de Ficha</option>
-                        <option value="6">6. Porte de Arma</option>
-                    </select>
+                    <div class="grupo-campo">
+                        <label>Selecione o Serviço:</label>
+                        <select id="select-template" onchange="alternarCampos()">
+                            <option value="1">1. Troca de Nome</option>
+                            <option value="2_adocao">2. Adoção</option>
+                            <option value="2_nascimento">2. Nascimento</option>
+                            <option value="3">3. Casamento</option>
+                            <option value="4">4. CNPJ (Abertura/Renovação)</option>
+                            <option value="5">5. Limpeza de Ficha</option>
+                            <option value="6">6. Porte de Arma</option>
+                        </select>
+                    </div>
                 </div>
+
+                <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo para Limpeza de Ficha e Troca de Nome c/ ficha suja) -->
                 <div id="area-ocr" class="card hidden">
-                    <h2 style="color: #eab308;">🔍 Análise IA</h2>
-                    <input type="file" id="foto-crimes" accept="image/*" onchange="processarImagem(event)">
+                    <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal para somar os meses automaticamente.</p>
+                    <label class="btn-upload">
+                        Escolher Ficheiro
+                        <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="processarImagem(event)">
+                    </label>
+                    <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
+                    <div id="status-ocr" class="status-ia"></div>
                 </div>
             </div>
+
             <div>
+                <!-- CAMPOS DINÂMICOS DO FORMULÁRIO -->
                 <div class="card">
-                    <h2>Dados do Requerimento</h2>
-                    <div id="campos-dinamicos" class="campos-grid"></div>
-                    <button onclick="gerarTemplate()" class="btn-gerar">Gerar Template</button>
+                    <h2 style="color: white; font-size: 1.25rem;">Dados do Requerimento</h2>
+                    <div id="campos-dinamicos" class="campos-grid">
+                        <!-- Injetado dinamicamente via JavaScript -->
+                    </div>
+                    <button onclick="gerarTemplate()" class="btn-gerar">Gerar Modelo Formatado</button>
                 </div>
+
+                <!-- CAMPO DE SAÍDA DO TEXTO FORMATADO -->
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <h2>Modelo Pronto</h2>
-                        <button onclick="enviarParaDiscord()" style="background:#5865F2; color:white; border:none; padding:0.5rem 1rem; border-radius:0.4rem; cursor:pointer;">🚀 Postar no Discord</button>
+                    <div class="flex-header">
+                        <h2>Modelo Pronto (Discord)</h2>
+                        <button onclick="copiarTexto()" class="btn-copiar">📄 Copiar Texto</button>
                     </div>
                     <textarea id="output-template" readonly></textarea>
                 </div>
             </div>
+
         </div>
     </div>
-    <div id="toast-copy">✅ Ação realizada com sucesso!</div>
+
+    <!-- Banner flutuante de confirmação Toast -->
+    <div id="toast-copy">
+        <span>✅</span> Modelo copiado com sucesso para colar no Discord!
+    </div>
 
     <script>
-        const webhookPadrao = "https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm";
-
+        // Estrutura de dados robusta e unificada contendo o combo inteligente de Troca de Nome e Porte de Arma
         const layouts = {
-            "1": [ { id: 'nome_atual', label: 'Nome Atual', placeholder: 'NOME' }, { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'NOME' }, { id: 'ficha_limpa', label: 'Ficha Limpa? (Sim/Não)', placeholder: 'SIM' } ],
-            "2_adocao": [ { id: 'nome', label: 'Nome', placeholder: 'NOME' }, { id: 'valor', label: 'Valor Total', placeholder: '0' } ],
-            "5": [ { id: 'nome', label: 'Nome', placeholder: 'NOME' }, { id: 'pena_atual', label: 'Pena (IA)', placeholder: '0M' } ],
-            "6": [ { id: 'nome', label: 'Nome', placeholder: 'NOME' }, { id: 'ficha_limpa', label: 'Ficha Limpa? (Sim/Não)', placeholder: 'SIM' }, { id: 'pena_atual', label: 'Pena (IA)', placeholder: '0M' } ]
+            "1": [
+                { type: 'seccao', label: 'Dados do Requerente' },
+                { id: 'nome_atual', label: 'Nome Atual', placeholder: 'Nome do Cliente' },
+                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome do Cliente' },
+                { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+                { type: 'seccao', label: 'Saneamento Judicial' },
+                { id: 'ficha_limpa', label: 'Possui Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
+                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
+                { type: 'seccao', label: 'Informações Adicionais' },
+                { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+            ],
+            "2_adocao": [
+                { type: 'seccao', label: 'Dados da Criança|Adulto' },
+                { id: 'nome_crianca', label: 'Nome da Criança|Adulto', placeholder: 'Nome do adotado' },
+                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Novo nome em caso de retificação' },
+                { id: 'id_crianca', label: 'ID da Criança|Adulto', placeholder: 'ID' },
+                { type: 'seccao', label: 'Responsável 1' },
+                { id: 'pai_mae_1', label: 'Nome Responsável 1', placeholder: 'Nome Completo' },
+                { id: 'id_pai_mae_1', label: 'ID Responsável 1', placeholder: 'ID' },
+                { type: 'seccao', label: 'Responsável 2' },
+                { id: 'pai_mae_2', label: 'Nome Responsável 2', placeholder: 'Nome Completo' },
+                { id: 'id_pai_mae_2', label: 'ID Responsável 2', placeholder: 'ID' },
+                { type: 'seccao', label: 'Valores e Datas' },
+                { id: 'data_adocao', label: 'Data Adoção (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'data_req', label: 'Data Requerimento', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' }
+            ],
+            "2_nascimento": [
+                { type: 'seccao', label: 'Dados da Criança' },
+                { id: 'nome_crianca', label: 'Nome da Criança', placeholder: 'Nome do recém-nascido' },
+                { id: 'id_crianca', label: 'ID da Criança', placeholder: 'ID' },
+                { type: 'seccao', label: 'Responsável 1' },
+                { id: 'pai_mae_1', label: 'Nome PAI|MÃE 1', placeholder: 'Nome Completo' },
+                { id: 'id_pai_mae_1', label: 'ID PAI|MÃE 1', placeholder: 'ID' },
+                { type: 'seccao', label: 'Responsável 2' },
+                { id: 'pai_mae_2', label: 'Nome PAI|MÃE 2', placeholder: 'Nome Completo' },
+                { id: 'id_pai_mae_2', label: 'ID PAI|MÃE 2', placeholder: 'ID' },
+                { type: 'seccao', label: 'Informação Médica' },
+                { id: 'medico', label: 'Nome do Médico', placeholder: 'Nome do Médico' },
+                { id: 'id_medico', label: 'ID Médico', placeholder: 'ID' },
+                { type: 'seccao', label: 'Valores e Datas' },
+                { id: 'data_nasc', label: 'Data de Nascimento (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "3": [
+                { type: 'seccao', label: 'Cônjuge 1' },
+                { id: 'c1_nome', label: 'Nome Completo Cônjuge 1', placeholder: 'Nome Completo' },
+                { id: 'c1_id', label: 'ID Cônjuge 1', placeholder: 'ID' },
+                { id: 'c1_tel', label: 'Telefone Cônjuge 1', placeholder: 'Telefone' },
+                { id: 'c1_sexo', label: 'Sexo Cônjuge 1', placeholder: 'M/F' },
+                { type: 'seccao', label: 'Cônjuge 2' },
+                { id: 'c2_nome', label: 'Nome Completo Cônjuge 2', placeholder: 'Nome Completo' },
+                { id: 'c2_id', label: 'ID Cônjuge 2', placeholder: 'ID' },
+                { id: 'c2_tel', label: 'Telefone Cônjuge 2', placeholder: 'Telefone' },
+                { id: 'c2_sexo', label: 'Sexo Cônjuge 2', placeholder: 'M/F' },
+                { type: 'seccao', label: 'Dados de Retificação' },
+                { id: 'data_casamento', label: 'Data Casamento (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'c1_nome_ret', label: 'Nome Retificado Cônjuge 1', placeholder: 'Nome após casamento' },
+                { id: 'c1_id_ret', label: 'ID Cônjuge 1 Retificado', placeholder: 'ID' },
+                { id: 'c2_nome_ret', label: 'Nome Retificado Cônjuge 2', placeholder: 'Nome após casamento' },
+                { id: 'c2_id_ret', label: 'ID Cônjuge 2 Retificado', placeholder: 'ID' },
+                { type: 'seccao', label: 'Valores' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "4": [
+                { type: 'seccao', label: 'Dados da Empresa' },
+                { id: 'empresa', label: 'Empresa', placeholder: 'Nome da Empresa' },
+                { id: 'solicitacao', label: 'Solicitação', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO', 'AUMENTO DE FUNCIONARIOS'] },
+                { id: 'num_func', label: 'Número de Funcionários', placeholder: 'Empresas 20 | Restaurante 15' },
+                { id: 'descricao', label: 'Descrição da Empresa', placeholder: 'Atividades comerciais' },
+                { type: 'seccao', label: 'Sócio 1' },
+                { id: 'socio1', label: 'Sócio 01', placeholder: 'Nome Completo' },
+                { id: 'id_socio1', label: 'ID Sócio 01', placeholder: 'ID' },
+                { id: 'tel_socio1', label: 'Telefone Sócio 01', placeholder: 'Telefone' },
+                { type: 'seccao', label: 'Sócio 2' },
+                { id: 'socio2', label: 'Sócio 02', placeholder: 'Nome Completo' },
+                { id: 'id_socio2', label: 'ID Sócio 02', placeholder: 'ID' },
+                { id: 'tel_socio2', label: 'Telefone Sócio 02', placeholder: 'Telefone' },
+                { type: 'seccao', label: 'Vigência e Faturação' },
+                { id: 'mes_vigente', label: 'Mês Vigente', placeholder: 'Mês vigente', valorFixo: 'Junho/2026' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'valor_jur', label: 'Valor Jurídico', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "5": [
+                { type: 'seccao', label: 'Dados do Requerente' },
+                { id: 'nome_completo', label: 'Nome Completo do Requerente', placeholder: 'Nome do Cliente' },
+                { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+                { type: 'seccao', label: 'Histórico Penal' },
+                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Aguardando captura de ecrã...', valorFixo: '0M' },
+                { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+                { id: 'data', label: 'Data', placeholder: '23/02/2025', valorFixo: '23/02/2025' }
+            ],
+            "6": [
+                { type: 'seccao', label: 'Requerente do Porte' },
+                { id: 'nome_completo', label: 'Nome Completo do Requerente', placeholder: 'Nome do Cliente' },
+                { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+                { type: 'seccao', label: 'Análise de Aptidão' },
+                { id: 'ficha_limpa', label: 'Há Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
+                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Anexe a captura caso Ficha seja Não...', valorFixo: '0M', readonly: true, dynamicHide: true },
+                { id: 'armamento', label: 'Armamento (Selecione as opções desejadas)', type: 'checkboxes', options: ['M911', 'Mossberg 590', 'Steyr AUG'] },
+                { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+            ]
+        };
+
+        const nomesRequerimentos = {
+            "1": "TROCA DE NOME",
+            "2_adocao": "ADOÇÃO",
+            "2_nascimento": "NASCIMENTO",
+            "3": "CASAMENTO",
+            "4": "ABERTURA, RENOVAÇÃO E AUMENTO DE FUNCIONÁRIOS DE CNPJ'S",
+            "5": "LIMPEZA DE FICHA",
+            "6": "PORTE DE ARMA"
         };
 
         function alternarCampos() {
             const escolha = document.getElementById('select-template').value;
             const container = document.getElementById('campos-dinamicos');
             container.innerHTML = '';
-            
-            // Lógica de mostrar OCR se for limpeza ou se trocar de nome/porte e não for ficha limpa
-            const needsOcr = ["5", "6"].includes(escolha);
-            document.getElementById('area-ocr').classList.toggle('hidden', !needsOcr);
 
-            layouts[escolha].forEach(c => {
+            // Decisão lógica de exibição do card OCR
+            atualizarVisibilidadeOCR();
+
+            layouts[escolha].forEach(campo => {
+                if (campo.type === 'seccao') {
+                    const divisor = document.createElement('div');
+                    divisor.className = 'seccao-divisor';
+                    divisor.id = `seccao-${campo.label.replace(/\s+/g, '-').toLowerCase()}`;
+                    const h3 = document.createElement('h3');
+                    h3.innerText = campo.label;
+                    divisor.appendChild(h3);
+                    container.appendChild(divisor);
+                    return;
+                }
+
                 const div = document.createElement('div');
-                div.innerHTML = `<label>${c.label}</label><input type="text" id="input-${c.id}" placeholder="${c.placeholder}">`;
+                div.id = `container-${campo.id}`;
+                if (campo.id === 'descricao' || campo.id === 'motivo' || campo.type === 'checkboxes') {
+                    div.className = 'full-width';
+                }
+                
+                const label = document.createElement('label');
+                label.innerText = campo.label;
+                div.appendChild(label);
+
+                if (campo.type === 'select') {
+                    const input = document.createElement('select');
+                    input.id = `input-${campo.id}`;
+                    if (campo.id === 'ficha_limpa') {
+                        input.onchange = handleFichaLimpaChange;
+                    }
+                    campo.options.forEach(opt => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = opt;
+                        optionElement.innerText = opt;
+                        input.appendChild(optionElement);
+                    });
+                    div.appendChild(input);
+                } else if (campo.type === 'checkboxes') {
+                    const wrapCheckboxes = document.createElement('div');
+                    wrapCheckboxes.style.display = 'flex';
+                    wrapCheckboxes.style.gap = '1.25rem';
+                    wrapCheckboxes.style.marginTop = '0.5rem';
+                    wrapCheckboxes.style.flexWrap = 'wrap';
+
+                    campo.options.forEach(opt => {
+                        const itemLabel = document.createElement('label');
+                        itemLabel.style.display = 'flex';
+                        itemLabel.style.alignItems = 'center';
+                        itemLabel.style.gap = '0.5rem';
+                        itemLabel.style.fontSize = '0.875rem';
+                        itemLabel.style.textTransform = 'none';
+                        itemLabel.style.cursor = 'pointer';
+                        itemLabel.style.color = '#fff';
+
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.name = campo.id;
+                        checkbox.value = opt;
+                        checkbox.style.width = 'auto';
+
+                        itemLabel.appendChild(checkbox);
+                        itemLabel.appendChild(document.createTextNode(opt));
+                        wrapCheckboxes.appendChild(itemLabel);
+                    });
+                    div.appendChild(wrapCheckboxes);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `input-${campo.id}`;
+                    input.placeholder = campo.placeholder;
+                    input.value = campo.valorFixo || '';
+
+                    if (campo.readonly) {
+                        input.readOnly = true;
+                        input.style.backgroundColor = '#1e293b';
+                        input.style.borderColor = '#475569';
+                        input.style.color = '#38bdf8';
+                    }
+                    div.appendChild(input);
+                }
+
                 container.appendChild(div);
             });
+
+            // Forçar ajuste do estado condicional da Troca de Nome e Porte de Arma após renderizar
+            if (["1", "6"].includes(escolha)) {
+                handleFichaLimpaChange();
+            }
         }
 
-        function processarImagem(e) {
-            Tesseract.recognize(e.target.files[0], 'por').then(res => {
-                let m = 0; res.data.text.replace(/(\d+)\s*(?:M|mes)/gi, (_, n) => m += parseInt(n));
-                document.getElementById('input-pena_atual').value = m + 'M';
+        function handleFichaLimpaChange() {
+            const escolha = document.getElementById('select-template').value;
+            if (escolha !== "1" && escolha !== "6") return;
+
+            const fichaLimpaVal = document.getElementById('input-ficha_limpa')?.value;
+            const penaContainer = document.getElementById('container-pena_atual');
+            
+            if (fichaLimpaVal === "Não") {
+                penaContainer?.classList.remove('hidden');
+            } else {
+                penaContainer?.classList.add('hidden');
+                // Reseta valor se voltar a Sim
+                const penaInput = document.getElementById('input-pena_atual');
+                if (penaInput) penaInput.value = '0M';
+            }
+            atualizarVisibilidadeOCR();
+        }
+
+        function atualizarVisibilidadeOCR() {
+            const escolha = document.getElementById('select-template').value;
+            const areaOcr = document.getElementById('area-ocr');
+            const fichaLimpaVal = document.getElementById('input-ficha_limpa')?.value;
+
+            // OCR ativo se for Limpeza de Ficha OU se for Troca de Nome/Porte de Arma com Ficha Suja
+            if (escolha === "5" || (["1", "6"].includes(escolha) && fichaLimpaVal === "Não")) {
+                areaOcr.classList.remove('hidden');
+            } else {
+                areaOcr.classList.add('hidden');
+            }
+        }
+
+        // Eventos para recalcular divisões financeiras ao introduzir valores
+        document.getElementById('campos-dinamicos').addEventListener('input', calcularValores);
+        document.getElementById('campos-dinamicos').addEventListener('change', calcularValores);
+
+        function calcularValores() {
+            const escolha = document.getElementById('select-template').value;
+            const valorInput = document.getElementById('input-valor');
+            if (!valorInput) return;
+
+            // Remove símbolos e pontos da digitação livre do utilizador
+            let valorTexto = valorInput.value.replace(/[^0-9]/g, '');
+            let valorNum = parseInt(valorTexto, 10) || 0;
+
+            let pctAdv = 0.50;
+            let pctJur = 0.50;
+
+            // Regra especial CNPJ (4)
+            if (escolha === "4") {
+                const solicitacao = document.getElementById('input-solicitacao')?.value;
+                if (solicitacao === "RENOVAÇÃO") {
+                    pctAdv = 0.40;
+                    pctJur = 0.60;
+                } else { // ABERTURA ou AUMENTO DE FUNCIONARIOS
+                    pctAdv = 0.60;
+                    pctJur = 0.40;
+                }
+            }
+
+            const valorAdv = Math.round(valorNum * pctAdv);
+            const valorJur = Math.round(valorNum * pctJur);
+
+            const formatarNumero = (num) => {
+                return num.toLocaleString('pt-PT');
+            };
+
+            const advInput = document.getElementById('input-valor_adv');
+            const jurInput = document.getElementById('input-valor_jur');
+            
+            if (advInput) advInput.value = valorAdv > 0 ? `${formatarNumero(valorAdv)}` : '';
+            if (jurInput) jurInput.value = valorJur > 0 ? `${formatarNumero(valorJur)}` : '';
+        }
+
+        function processarImagem(event) {
+            const file = event.target.files[0];
+            const statusDiv = document.getElementById('status-ocr');
+            const nomeArquivo = document.getElementById('nome-arquivo');
+            
+            if (!file) return;
+            nomeArquivo.innerText = file.name;
+            statusDiv.innerText = "🔄 Analisando captura de ecrã via OCR... Aguarde.";
+
+            Tesseract.recognize(file, 'por+eng').then(({ data: { text } }) => {
+                const regexMeses = /(\d+)\s*(?:M|m|meses|mes)/g;
+                let totalMeses = 0;
+                let correspondencia;
+
+                while ((correspondencia = regexMeses.exec(text)) !== null) {
+                    totalMeses += parseInt(correspondencia[1], 10);
+                }
+
+                statusDiv.innerText = `✅ Sucesso! Total extraído: ${totalMeses}M`;
+
+                const penaInput = document.getElementById('input-pena_atual');
+                if (penaInput) {
+                    penaInput.value = `${totalMeses}M`;
+                }
+            }).catch(err => {
+                statusDiv.innerText = "❌ Falha ao processar a imagem localmente.";
             });
         }
 
         function gerarTemplate() {
-            const adv = document.getElementById('adv-nome').value.toUpperCase();
-            let res = `**ADVOGADO:** ${adv}\n\n\`\`\`md\n`;
+            const escolha = document.getElementById('select-template').value;
+            const advNome = document.getElementById('adv-nome').value || "Não informado";
+            let nomeReqAutomatico = nomesRequerimentos[escolha];
             
-            document.querySelectorAll('#campos-dinamicos input').forEach(el => {
-                const label = el.parentElement.querySelector('label').innerText;
-                res += `[${label.toUpperCase()}][${el.value.toUpperCase()}]\n`;
-            });
-            document.getElementById('output-template').value = res + "```";
+            const pegarValor = (id) => document.getElementById(`input-${id}`)?.value || "XXXX";
+
+            // Se for Troca de nome com ficha suja, transforma no Requerimento Conjugado
+            if (escolha === "1" && pegarValor('ficha_limpa') === "Não") {
+                nomeReqAutomatico = "LIMPEZA DE FICHA & TROCA DE NOME";
+            }
+            // Se for Porte de Arma com ficha suja, transforma no Requerimento Conjugado
+            else if (escolha === "6" && pegarValor('ficha_limpa') === "Não") {
+                nomeReqAutomatico = "LIMPEZA DE FICHA & PORTE DE ARMA";
+            }
+
+            let resultado = `**Advogado Responsável:** ${advNome}\n\n\`\`\`md\n`;
+
+            if (escolha === "1") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[NOME ATUAL][${pegarValor('nome_atual')}]\n` +
+                             `[NOME RETIFICADO][${pegarValor('nome_retificado')}]\n` +
+                             `[ID DO REQUERENTE][${pegarValor('id_req')}]\n` +
+                             `[TELEFONE][${pegarValor('telefone')}]\n`;
+                
+                if (pegarValor('ficha_limpa') === "Não") {
+                    resultado += `[PENA DETECTADA][${pegarValor('pena_atual')}]\n`;
+                }
+                
+                resultado += `[MOTIVO][${pegarValor('motivo')}]\n` +
+                             `[DATA][${pegarValor('data')}]`;
+            } 
+            else if (escolha === "2_adocao") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[NOME DA CRIANÇA|ADULTO][${pegarValor('nome_crianca')}][NOME RETIFICADO][${pegarValor('nome_retificado')}][ID][${pegarValor('id_crianca')}]\n\n` +
+                             `[NOME RESPONSÁVEL 1][${pegarValor('pai_mae_1')}][ID][${pegarValor('id_pai_mae_1')}]\n` +
+                             `[NOME RESPONSÁVEL 2][${pegarValor('pai_mae_2')}][ID][${pegarValor('id_pai_mae_2')}]\n\n` +
+                             `[DATA ADOÇÃO][${pegarValor('data_adocao')}]\n\n` +
+                             `[VALOR TOTAL][${pegarValor('valor')}][DATA REQUERIMENTO][${pegarValor('data_req')}]\n` +
+                             `[VALOR ADVOGADO][${pegarValor('valor_adv')}][VALOR JURIDICO][${pegarValor('valor_jur')}]`;
+            }
+            else if (escolha === "2_nascimento") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[NOME DA CRIANÇA][${pegarValor('nome_crianca')}][ID DA CRIANÇA][${pegarValor('id_crianca')}]\n` +
+                             `[NOME PAI|MÃE 1][${pegarValor('pai_mae_1')}][ID PAI|MÃE 1][${pegarValor('id_pai_mae_1')}]\n` +
+                             `[NOME PAI|MÃE 2][${pegarValor('pai_mae_2')}][ID PAI|MÃE 2][${pegarValor('id_pai_mae_2')}]\n` +
+                             `[NOME DO MÉDICO][${pegarValor('medico')}][ID MÉDICO][${pegarValor('id_medico')}]\n` +
+                             `[DATA DE NASCIMENTO][${pegarValor('data_nasc')}]\n\n` +
+                             `[VALOR][${pegarValor('valor')}]\n` +
+                             `[VALOR JURIDICO][${pegarValor('valor_jur')}]\n` +
+                             `[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
+            }
+            else if (escolha === "3") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[NOME COMPLETO CÔNJUGE 1][${pegarValor('c1_nome')}][ID CÔNJUGE 1][${pegarValor('c1_id')}]\n` +
+                             `[TELEFONE CÔNJUGE 1][${pegarValor('c1_tel')}][SEXO CÔNJUGE 1][${pegarValor('c1_sexo')}]\n` +
+                             `[NOME COMPLETO CÔNJUGE 2][${pegarValor('c2_nome')}][ID CÔNJUGE 2][${pegarValor('c2_id')}]\n` +
+                             `[TELEFONE CÔNJUGE 2][${pegarValor('c2_tel')}][SEXO CÔNJUGE 2][${pegarValor('c2_sexo')}]\n` +
+                             `[DATA CASAMENTO][${pegarValor('data_casamento')}]\n` +
+                             `[NOME RETIFICADO CÔNJUGE 1][${pegarValor('c1_nome_ret')}][ID CÔNJUGE 1 RETIFICADO][${pegarValor('c1_id_ret')}]\n` +
+                             `[NOME RETIFICADO CÔNJUGE 2][${pegarValor('c2_nome_ret')}][ID CÔNJUGE 2 RETIFICADO][${pegarValor('c2_id_ret')}]\n\n` +
+                             `[VALOR TOTAL][${pegarValor('valor')}]\n` +
+                             `[VALOR JURIDICO][${pegarValor('valor_jur')}]\n` +
+                             `[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
+            }
+            else if (escolha === "4") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[EMPRESA][${pegarValor('empresa')}]\n` +
+                             `[SÓCIO 01][${pegarValor('socio1')}][ID SÓCIO 01][${pegarValor('id_socio1')}][TELEFONE SÓCIO 01][${pegarValor('tel_socio1')}]\n` +
+                             `[SÓCIO 02][${pegarValor('socio2')}][ID SÓCIO 02][${pegarValor('id_socio2')}][TELEFONE SÓCIO 02][${pegarValor('tel_socio2')}]\n` +
+                             `[SOLICITAÇÃO][${pegarValor('solicitacao')}][NÚMERO DE FUNCIONÁRIOS][${pegarValor('num_func')}]\n` +
+                             `[DESCRIÇÃO DA EMPRESA][${pegarValor('descricao')}]\n` +
+                             `[MÊS VIGENTE][${pegarValor('mes_vigente')}]\n\n` +
+                             `[VALOR TOTAL][${pegarValor('valor')}]\n` +
+                             `[VALOR JURIDICO][${pegarValor('valor_jur')}]\n` +
+                             `[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
+            }
+            else if (escolha === "5") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[NOME COMPLETO DO REQUERENTE][${pegarValor('nome_completo')}]\n` +
+                             `[ID DO REQUERENTE][${pegarValor('id_req')}]\n` +
+                             `[TELEFONE][${pegarValor('telefone')}]\n` +
+                             `[PENA DETECTADA][${pegarValor('pena_atual')}]\n` +
+                             `[MOTIVO][${pegarValor('motivo')}]\n` +
+                             `[DATA][${pegarValor('data')}]`;
+            }
+            else if (escolha === "6") {
+                const checkboxes = document.querySelectorAll('input[name="armamento"]:checked');
+                const selecionados = Array.from(checkboxes).map(cb => cb.value).join(' / ') || 'Nenhum';
+                
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n` +
+                             `[NOME COMPLETO DO REQUERENTE][${pegarValor('nome_completo')}]\n` +
+                             `[ID DO REQUERENTE][${pegarValor('id_req')}]\n` +
+                             `[TELEFONE][${pegarValor('telefone')}]\n` +
+                             `[HÁ FICHA LIMPA?][${pegarValor('ficha_limpa')}]\n`;
+
+                if (pegarValor('ficha_limpa') === "Não") {
+                    resultado += `[PENA DETECTADA][${pegarValor('pena_atual')}]\n`;
+                }
+
+                resultado += `[ARMAMENTO][${selecionados}]\n` +
+                             `[MOTIVO][${pegarValor('motivo')}]\n` +
+                             `[DATA][${pegarValor('data')}]`;
+            }
+
+            resultado += `\n\`\`\``;
+            document.getElementById('output-template').value = resultado;
         }
 
-        async function enviarParaDiscord() {
-            const content = document.getElementById('output-template').value;
-            if(!content) return;
-            await fetch(webhookPadrao, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ content: content }) 
-            });
-            const t = document.getElementById('toast-copy'); t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        function copiarTexto() {
+            const textarea = document.getElementById('output-template');
+            textarea.select();
+            document.execCommand('copy');
+            
+            // Exibir Toast Banner elegante de sucesso
+            const toast = document.getElementById('toast-copy');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
-        
+
+        // Inicializar com o primeiro template ativo
         alternarCampos();
     </script>
 </body>
