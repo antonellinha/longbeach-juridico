@@ -1,154 +1,130 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Protocolos - Long Beach</title>
     <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0f172a; color: #cbd5e1; }
-        .card { background-color: #1e293b; border: 1px solid #334155; }
-        .seccao-divisor { grid-column: span 1 / span 1; border-bottom: 1px solid #334155; padding-bottom: 0.35rem; margin-top: 1rem; margin-bottom: 0.5rem; color: #38bdf8; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0f172a; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; padding: 2rem 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
+        h1 { color: #38bdf8; font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .grid-principal { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 1024px) { .grid-principal { grid-template-columns: 1fr 2fr; } }
+        .card { background-color: #1e293b; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #334155; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.125rem; font-weight: 600; color: #38bdf8; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .grupo-campo { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; }
+        input, select, textarea { width: 100%; background-color: #334155; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.65rem; font-size: 0.875rem; color: #fff; }
+        .campos-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 640px) { .campos-grid { grid-template-columns: 1fr 1fr; } }
+        .seccao-divisor { grid-column: span 1 / span 1; border-bottom: 1px solid #334155; padding-bottom: 0.35rem; margin-top: 1rem; margin-bottom: 0.5rem; }
         @media (min-width: 640px) { .seccao-divisor { grid-column: span 2 / span 2; } }
-        input, select, textarea { background-color: #334155; border: 1px solid #475569; color: white; padding: 0.5rem; border-radius: 0.4rem; }
+        .seccao-divisor h3 { color: #38bdf8; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; width: 100%; height: 350px; }
+        .hidden { display: none !important; }
+        #toast-copy { position: fixed; bottom: 2rem; right: 2rem; background-color: #059669; color: #fff; padding: 1rem; border-radius: 0.5rem; transform: translateY(200%); transition: transform 0.3s; }
+        #toast-copy.show { transform: translateY(0); }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-5xl mx-auto">
-        <header class="text-center mb-8 border-b border-slate-700 pb-4">
-            <h1 class="text-3xl font-bold text-sky-400">SISTEMA DE PROTOCOLOS - LONG BEACH</h1>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Coluna Esquerda: Configuração -->
-            <div class="lg:col-span-1 space-y-6">
-                <div class="card p-4 rounded-xl">
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Advogado Responsável</label>
-                    <input type="text" id="adv-nome" class="w-full" placeholder="DR. NOME">
+<body>
+    <div class="container">
+        <header><h1>Sistema de Protocolos</h1></header>
+        <div class="grid-principal">
+            <div>
+                <div class="card">
+                    <h2>⚖️ Identificação</h2>
+                    <input type="text" id="adv-nome" placeholder="NOME DO ADVOGADO">
                 </div>
-
-                <div class="card p-4 rounded-xl">
-                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Selecione o Serviço</label>
-                    <select id="select-template" onchange="alternarCampos()" class="w-full">
-                        <option value="1">1. TROCA DE NOME</option>
-                        <option value="2_adocao">2. ADOÇÃO</option>
-                        <option value="2_nascimento">2. NASCIMENTO</option>
-                        <option value="3">3. CASAMENTO</option>
-                        <option value="4">4. CNPJ</option>
-                        <option value="5">5. LIMPEZA DE FICHA</option>
-                        <option value="6">6. PORTE DE ARMA</option>
+                <div class="card">
+                    <label>Selecione o Serviço:</label>
+                    <select id="select-template" onchange="alternarCampos()">
+                        <option value="1">1. Troca de Nome</option>
+                        <option value="2_adocao">2. Adoção</option>
+                        <option value="5">5. Limpeza de Ficha</option>
+                        <option value="6">6. Porte de Arma</option>
                     </select>
                 </div>
-
-                <div id="area-ocr" class="card p-4 rounded-xl hidden">
-                    <h2 class="text-yellow-500 font-bold text-sm mb-2 uppercase">🔍 Análise de Ficha (OCR)</h2>
-                    <input type="file" id="foto-crimes" class="w-full text-sm" onchange="processarImagem(event)">
+                <div id="area-ocr" class="card hidden">
+                    <h2 style="color: #eab308;">🔍 Análise IA</h2>
+                    <input type="file" id="foto-crimes" accept="image/*" onchange="processarImagem(event)">
                 </div>
             </div>
-
-            <!-- Coluna Direita: Dados e Geração -->
-            <div class="lg:col-span-2 space-y-6">
-                <div class="card p-6 rounded-xl">
-                    <h2 class="text-xl font-bold text-white mb-4">Dados do Requerimento</h2>
-                    <div id="campos-dinamicos" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-                    <button onclick="gerarTemplate()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 mt-6 rounded-lg uppercase">Gerar Template (Caixa Alta)</button>
+            <div>
+                <div class="card">
+                    <h2>Dados do Requerimento</h2>
+                    <div id="campos-dinamicos" class="campos-grid"></div>
+                    <button onclick="gerarTemplate()" class="btn-gerar">Gerar Template</button>
                 </div>
-
-                <div class="card p-6 rounded-xl">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-white font-bold">Template Prévio</h2>
-                        <button onclick="enviarDiscord()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-bold text-sm uppercase">Postar no Discord</button>
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <h2>Modelo Pronto</h2>
+                        <button onclick="enviarParaDiscord()" style="background:#5865F2; color:white; border:none; padding:0.5rem 1rem; border-radius:0.4rem; cursor:pointer;">🚀 Postar no Discord</button>
                     </div>
-                    <textarea id="output-template" class="w-full h-64 font-mono text-xs p-4 bg-black text-emerald-400 border border-slate-700 rounded-lg"></textarea>
+                    <textarea id="output-template" readonly></textarea>
                 </div>
             </div>
         </div>
     </div>
+    <div id="toast-copy">✅ Ação realizada com sucesso!</div>
 
     <script>
-        const webhookUrl = "https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm";
+        const webhookPadrao = "https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm";
 
         const layouts = {
-            "1": [
-                { id: 'nome_atual', label: 'Nome Atual', placeholder: 'NOME' },
-                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'NOME' },
-                { id: 'id_req', label: 'ID', placeholder: 'ID' },
-                { id: 'telefone', label: 'Telefone', placeholder: 'TEL' },
-                { id: 'ficha_limpa', label: 'Ficha Limpa?', type: 'select', options: ['SIM', 'NÃO'] },
-                { id: 'pena', label: 'Pena Detectada', placeholder: '0M' }
-            ],
-            "2_adocao": [
-                { type: 'seccao', label: 'Criança/Responsáveis' },
-                { id: 'nome_c', label: 'Nome Criança', placeholder: 'NOME' },
-                { id: 'id_c', label: 'ID Criança', placeholder: 'ID' },
-                { id: 'pai_1', label: 'Pai/Mãe 1', placeholder: 'NOME' },
-                { id: 'pai_2', label: 'Pai/Mãe 2', placeholder: 'NOME' },
-                { type: 'seccao', label: 'Valores' },
-                { id: 'valor', label: 'Valor Total', placeholder: '0' },
-                { id: 'v_jur', label: 'Jurídico (50%)', placeholder: '0' },
-                { id: 'v_adv', label: 'Advogado (50%)', placeholder: '0' }
-            ],
-            "5": [
-                { id: 'nome', label: 'Nome Completo', placeholder: 'NOME' },
-                { id: 'id', label: 'ID', placeholder: 'ID' },
-                { id: 'telefone', label: 'Telefone', placeholder: 'TEL' },
-                { id: 'pena', label: 'Pena', placeholder: '0M' }
-            ],
-            "6": [
-                { id: 'nome', label: 'Nome Completo', placeholder: 'NOME' },
-                { id: 'id', label: 'ID', placeholder: 'ID' },
-                { id: 'ficha_limpa', label: 'Ficha Limpa?', type: 'select', options: ['SIM', 'NÃO'] },
-                { id: 'pena', label: 'Pena Detectada', placeholder: '0M' },
-                { id: 'armas', label: 'Armamento', placeholder: 'ARMAS' }
-            ]
+            "1": [ { id: 'nome_atual', label: 'Nome Atual', placeholder: 'NOME' }, { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'NOME' }, { id: 'ficha_limpa', label: 'Ficha Limpa? (Sim/Não)', placeholder: 'SIM' } ],
+            "2_adocao": [ { id: 'nome', label: 'Nome', placeholder: 'NOME' }, { id: 'valor', label: 'Valor Total', placeholder: '0' } ],
+            "5": [ { id: 'nome', label: 'Nome', placeholder: 'NOME' }, { id: 'pena_atual', label: 'Pena (IA)', placeholder: '0M' } ],
+            "6": [ { id: 'nome', label: 'Nome', placeholder: 'NOME' }, { id: 'ficha_limpa', label: 'Ficha Limpa? (Sim/Não)', placeholder: 'SIM' }, { id: 'pena_atual', label: 'Pena (IA)', placeholder: '0M' } ]
         };
 
         function alternarCampos() {
             const escolha = document.getElementById('select-template').value;
             const container = document.getElementById('campos-dinamicos');
             container.innerHTML = '';
-            document.getElementById('area-ocr').classList.toggle('hidden', !['1', '5', '6'].includes(escolha));
+            
+            // Lógica de mostrar OCR se for limpeza ou se trocar de nome/porte e não for ficha limpa
+            const needsOcr = ["5", "6"].includes(escolha);
+            document.getElementById('area-ocr').classList.toggle('hidden', !needsOcr);
 
-            (layouts[escolha] || []).forEach(c => {
-                if(c.type === 'seccao') {
-                    const div = document.createElement('div');
-                    div.className = 'seccao-divisor';
-                    div.innerText = c.label;
-                    container.appendChild(div);
-                } else {
-                    const div = document.createElement('div');
-                    div.innerHTML = `<label class="block text-[10px] font-bold text-slate-500 uppercase">${c.label}</label>${c.type==='select'?`<select id="input-${c.id}" class="w-full">${c.options.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`:`<input type="text" id="input-${c.id}" class="w-full" placeholder="${c.placeholder}">`}`;
-                    container.appendChild(div);
-                }
+            layouts[escolha].forEach(c => {
+                const div = document.createElement('div');
+                div.innerHTML = `<label>${c.label}</label><input type="text" id="input-${c.id}" placeholder="${c.placeholder}">`;
+                container.appendChild(div);
             });
         }
 
         function processarImagem(e) {
-            Tesseract.recognize(e.target.files[0], 'por').then(d => {
-                let t = 0; [...d.data.text.matchAll(/(\d+)M/g)].forEach(m => t += parseInt(m[1]));
-                if(document.getElementById('input-pena')) document.getElementById('input-pena').value = t + 'M';
+            Tesseract.recognize(e.target.files[0], 'por').then(res => {
+                let m = 0; res.data.text.replace(/(\d+)\s*(?:M|mes)/gi, (_, n) => m += parseInt(n));
+                document.getElementById('input-pena_atual').value = m + 'M';
             });
         }
 
         function gerarTemplate() {
-            const e = document.getElementById('select-template').value;
             const adv = document.getElementById('adv-nome').value.toUpperCase();
-            let txt = `**ADVOGADO:** ${adv}\n\n\`\`\`md\n[REQUERIMENTO][${document.getElementById('select-template').options[document.getElementById('select-template').selectedIndex].text}]\n`;
+            let res = `**ADVOGADO:** ${adv}\n\n\`\`\`md\n`;
             
-            document.querySelectorAll('#campos-dinamicos input, #campos-dinamicos select').forEach(el => {
+            document.querySelectorAll('#campos-dinamicos input').forEach(el => {
                 const label = el.parentElement.querySelector('label').innerText;
-                txt += `[${label.toUpperCase()}][${el.value.toUpperCase()}]\n`;
+                res += `[${label.toUpperCase()}][${el.value.toUpperCase()}]\n`;
             });
-            document.getElementById('output-template').value = txt + "```";
+            document.getElementById('output-template').value = res + "```";
         }
 
-        async function enviarDiscord() {
-            await fetch(webhookUrl, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ content: document.getElementById('output-template').value })
+        async function enviarParaDiscord() {
+            const content = document.getElementById('output-template').value;
+            if(!content) return;
+            await fetch(webhookPadrao, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ content: content }) 
             });
-            alert('POSTADO!');
+            const t = document.getElementById('toast-copy'); t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
         
         alternarCampos();
