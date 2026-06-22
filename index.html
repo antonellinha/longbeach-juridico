@@ -994,6 +994,11 @@ function atualizarCamposCNPJ() {
             }
         }
 
+        
+        function textoTemplateMaiusculo(texto) {
+            return String(texto || '').toUpperCase();
+        }
+
         function gerarTemplate() {
             const escolha = document.getElementById('select-template').value;
             const advNome = document.getElementById('adv-nome').value || "Não informado";
@@ -1178,7 +1183,7 @@ resultado += `\n\`\`\``;
             
             
 
-            document.getElementById('output-template').value = resultado;
+            document.getElementById('output-template').value = textoTemplateMaiusculo(resultado);
         }
 
 
