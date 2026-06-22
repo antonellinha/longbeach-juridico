@@ -61,6 +61,13 @@
         .hidden { display: none !important; }
         .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; font-weight: 500; }
 
+        .btn-secundario { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.6rem 0.9rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem; text-transform: uppercase; }
+        .btn-secundario:hover { background-color: #475569; }
+        #area-recorte-ficha { margin-top: 1rem; }
+        #preview-ficha { width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #475569; border-radius: 0.5rem; background: #020617; cursor: crosshair; }
+        .ajuda-recorte { font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.35; }
+
+
         /* Estilização moderna para o Toast Banner de Cópia */
         #toast-copy {
             position: fixed;
@@ -127,9 +134,19 @@
                     <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local fará OCR, identificará crimes, artigos, quantidades e somará os meses pelo Código Penal 2026.</p>
                     <label class="btn-upload">
                         Escolher Ficheiro
-                        <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="processarImagem(event)">
+                        <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="prepararImagemFicha(event)">
                     </label>
                     <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
+
+                    <div id="area-recorte-ficha" class="hidden">
+                        <canvas id="preview-ficha"></canvas>
+                        <div class="ajuda-recorte">
+                            A IA tentará identificar automaticamente a área da <b>FICHA CRIMINAL</b>. Se quiser corrigir, arraste no preview para selecionar somente a área onde ficam os crimes.
+                        </div>
+                        <button type="button" class="btn-secundario" onclick="analisarAreaFichaSelecionada()">🔍 Analisar somente ficha criminal</button>
+                        <button type="button" class="btn-secundario" onclick="limparSelecaoFicha()">↺ Usar recorte automático</button>
+                    </div>
+
                     <div id="status-ocr" class="status-ia"></div>
                     <div id="resultado-crimes" class="status-ia" style="white-space: pre-wrap; color: #cbd5e1;"></div>
                     <div id="texto-ocr-debug" class="status-ia hidden" style="white-space: pre-wrap; color: #64748b; max-height: 180px; overflow: auto; border-top: 1px solid #334155; margin-top: 0.75rem; padding-top: 0.75rem;"></div>
@@ -1543,68 +1560,252 @@
             return { totalMeses, totalBruto, encontrados, textoOCR: textoCompleto };
         }
 
-        function melhorarImagemParaOCR(file) {
+        let imagemFichaOriginal = null;
+        let selecaoFicha = null;
+        let recorteAutomaticoFicha = null;
+
+        function carregarImagemArquivo(file) {
             return new Promise((resolve) => {
                 const img = new Image();
                 const reader = new FileReader();
-
                 reader.onload = e => {
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const escala = Math.max(1, Math.min(3, 1800 / Math.max(img.width, img.height)));
-                        canvas.width = Math.round(img.width * escala);
-                        canvas.height = Math.round(img.height * escala);
-
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const data = imageData.data;
-
-                        // Converte para tons de cinza e aumenta contraste para melhorar OCR em prints escuros.
-                        for (let i = 0; i < data.length; i += 4) {
-                            let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                            gray = gray > 145 ? 255 : 0;
-                            data[i] = data[i + 1] = data[i + 2] = gray;
-                        }
-
-                        ctx.putImageData(imageData, 0, 0);
-                        canvas.toBlob(blob => resolve(blob || file), 'image/png');
-                    };
+                    img.onload = () => resolve(img);
                     img.src = e.target.result;
                 };
-
                 reader.readAsDataURL(file);
             });
         }
 
-        async function processarImagem(event) {
+        async function prepararImagemFicha(event) {
             const file = event.target.files[0];
-            const statusDiv = document.getElementById('status-ocr');
             const nomeArquivo = document.getElementById('nome-arquivo');
+            const statusDiv = document.getElementById('status-ocr');
+            const areaRecorte = document.getElementById('area-recorte-ficha');
             const resultadoCrimes = document.getElementById('resultado-crimes');
             const debugOCR = document.getElementById('texto-ocr-debug');
 
             if (!file) return;
+
             nomeArquivo.innerText = file.name;
-            statusDiv.innerText = "🔄 IA LOCAL ANALISANDO A FICHA... MELHORANDO IMAGEM, LENDO OCR E CRUZANDO COM O CÓDIGO PENAL.";
+            statusDiv.innerText = "🔄 CARREGANDO IMAGEM E PROCURANDO A ÁREA DA FICHA CRIMINAL...";
             if (resultadoCrimes) resultadoCrimes.innerText = "";
             if (debugOCR) {
                 debugOCR.innerText = "";
                 debugOCR.classList.add("hidden");
             }
 
-            try {
-                const imagemMelhorada = await melhorarImagemParaOCR(file);
+            imagemFichaOriginal = await carregarImagemArquivo(file);
+            selecaoFicha = null;
+            recorteAutomaticoFicha = detectarAreaFichaCriminal(imagemFichaOriginal);
 
-                const { data: { text } } = await Tesseract.recognize(imagemMelhorada, 'por+eng', {
+            desenharPreviewFicha();
+            areaRecorte.classList.remove("hidden");
+
+            statusDiv.innerText = "✅ ÁREA DA FICHA CRIMINAL PREPARADA. CLIQUE EM ANALISAR OU ARRASTE PARA SELECIONAR MANUALMENTE.";
+        }
+
+        function detectarAreaFichaCriminal(img) {
+            // Busca visual aproximada: geralmente a ficha criminal é um painel/tabela mais central.
+            // O recorte padrão remove menus, bordas e áreas externas para evitar textos fora da ficha.
+            const margemX = Math.round(img.width * 0.08);
+            const margemY = Math.round(img.height * 0.10);
+            return {
+                x: margemX,
+                y: margemY,
+                w: img.width - margemX * 2,
+                h: img.height - margemY * 2
+            };
+        }
+
+        function desenharPreviewFicha() {
+            if (!imagemFichaOriginal) return;
+
+            const canvas = document.getElementById("preview-ficha");
+            const ctx = canvas.getContext("2d");
+
+            const maxW = 900;
+            const escala = Math.min(1, maxW / imagemFichaOriginal.width);
+            canvas.width = Math.round(imagemFichaOriginal.width * escala);
+            canvas.height = Math.round(imagemFichaOriginal.height * escala);
+            canvas.dataset.escala = escala;
+
+            ctx.drawImage(imagemFichaOriginal, 0, 0, canvas.width, canvas.height);
+
+            const r = selecaoFicha || recorteAutomaticoFicha;
+            if (r) {
+                ctx.save();
+                ctx.fillStyle = "rgba(0,0,0,0.45)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const sx = r.x * escala, sy = r.y * escala, sw = r.w * escala, sh = r.h * escala;
+                ctx.clearRect(sx, sy, sw, sh);
+                ctx.drawImage(imagemFichaOriginal, r.x, r.y, r.w, r.h, sx, sy, sw, sh);
+
+                ctx.strokeStyle = "#38bdf8";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(sx, sy, sw, sh);
+                ctx.restore();
+            }
+
+            ativarSelecaoManualFicha(canvas);
+        }
+
+        function ativarSelecaoManualFicha(canvas) {
+            let inicio = null;
+
+            canvas.onmousedown = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                inicio = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            };
+
+            canvas.onmousemove = (e) => {
+                if (!inicio) return;
+                const rect = canvas.getBoundingClientRect();
+                const atual = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+                desenharPreviewFicha();
+
+                const ctx = canvas.getContext("2d");
+                ctx.strokeStyle = "#22c55e";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(inicio.x, inicio.y, atual.x - inicio.x, atual.y - inicio.y);
+            };
+
+            canvas.onmouseup = (e) => {
+                if (!inicio) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const fim = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                const escala = parseFloat(canvas.dataset.escala || "1");
+
+                const x = Math.min(inicio.x, fim.x) / escala;
+                const y = Math.min(inicio.y, fim.y) / escala;
+                const w = Math.abs(fim.x - inicio.x) / escala;
+                const h = Math.abs(fim.y - inicio.y) / escala;
+
+                if (w > 30 && h > 30) {
+                    selecaoFicha = {
+                        x: Math.round(x),
+                        y: Math.round(y),
+                        w: Math.round(w),
+                        h: Math.round(h)
+                    };
+                }
+
+                inicio = null;
+                desenharPreviewFicha();
+            };
+        }
+
+        function limparSelecaoFicha() {
+            selecaoFicha = null;
+            desenharPreviewFicha();
+            const statusDiv = document.getElementById('status-ocr');
+            statusDiv.innerText = "↺ SELEÇÃO MANUAL REMOVIDA. O RECORTE AUTOMÁTICO DA FICHA CRIMINAL SERÁ USADO.";
+        }
+
+        function recortarImagemFicha(img, area) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const margem = 6;
+
+                const x = Math.max(0, area.x - margem);
+                const y = Math.max(0, area.y - margem);
+                const w = Math.min(img.width - x, area.w + margem * 2);
+                const h = Math.min(img.height - y, area.h + margem * 2);
+
+                const escala = Math.max(1, Math.min(3, 1800 / Math.max(w, h)));
+
+                canvas.width = Math.round(w * escala);
+                canvas.height = Math.round(h * escala);
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, x, y, w, h, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    gray = gray > 150 ? 255 : 0;
+                    data[i] = data[i + 1] = data[i + 2] = gray;
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+                canvas.toBlob(blob => resolve(blob), 'image/png');
+            });
+        }
+
+        function filtrarTextoSomenteFichaCriminal(textoOCR) {
+            const linhas = (textoOCR || "").split(/\n/).map(l => l.trim()).filter(Boolean);
+            const normalizadas = linhas.map(normalizarTexto);
+
+            const inicioIdx = normalizadas.findIndex(l =>
+                l.includes("FICHA CRIMINAL") ||
+                l.includes("CRIMES") ||
+                l.includes("ARTIGO") ||
+                l.includes("PENA") ||
+                l.includes("INFRAÇÕES") ||
+                l.includes("INFRACOES")
+            );
+
+            const termosFim = [
+                "HISTORICO", "OBSERVACOES", "OBSERVACAO", "MULTA TOTAL",
+                "ADVOGADO", "OFICIAL", "ASSINATURA", "REGISTRO", "DADOS DO CIDADAO"
+            ];
+
+            let fimIdx = linhas.length;
+            for (let i = Math.max(0, inicioIdx + 1); i < normalizadas.length; i++) {
+                if (termosFim.some(t => normalizadas[i].includes(t))) {
+                    fimIdx = i;
+                    break;
+                }
+            }
+
+            if (inicioIdx >= 0) {
+                return linhas.slice(inicioIdx, fimIdx).join("\n");
+            }
+
+            // Se o OCR não achou o título, usa o texto do recorte, mas remove linhas claramente fora de crime.
+            return linhas.filter((linha, i) => {
+                const l = normalizadas[i];
+                if (l.includes("NOME") || l.includes("PASSAPORTE") || l.includes("TELEFONE") || l.includes("RG")) return false;
+                if (l.includes("ENDERECO") || l.includes("EMPREGO") || l.includes("BANCO")) return false;
+                return true;
+            }).join("\n");
+        }
+
+        async function analisarAreaFichaSelecionada() {
+            const statusDiv = document.getElementById('status-ocr');
+            const resultadoCrimes = document.getElementById('resultado-crimes');
+            const debugOCR = document.getElementById('texto-ocr-debug');
+
+            if (!imagemFichaOriginal) {
+                statusDiv.innerText = "❌ ESCOLHA UMA IMAGEM PRIMEIRO.";
+                return;
+            }
+
+            try {
+                const area = selecaoFicha || recorteAutomaticoFicha || detectarAreaFichaCriminal(imagemFichaOriginal);
+
+                statusDiv.innerText = "🔄 IA LOCAL LENDO APENAS A ÁREA IDENTIFICADA COMO FICHA CRIMINAL...";
+                if (resultadoCrimes) resultadoCrimes.innerText = "";
+                if (debugOCR) {
+                    debugOCR.innerText = "";
+                    debugOCR.classList.add("hidden");
+                }
+
+                const imagemRecortada = await recortarImagemFicha(imagemFichaOriginal, area);
+
+                const { data: { text } } = await Tesseract.recognize(imagemRecortada, 'por+eng', {
                     tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç0123456789-/ .,:;()',
                     preserve_interword_spaces: '1'
                 });
 
-                const analise = analisarFichaCriminal(text);
+                const textoFicha = filtrarTextoSomenteFichaCriminal(text);
+                const analise = analisarFichaCriminal(textoFicha);
 
-                statusDiv.innerText = `✅ ANÁLISE INTELIGENTE FINALIZADA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
+                statusDiv.innerText = `✅ ANÁLISE FINALIZADA SOMENTE NA FICHA CRIMINAL! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
 
                 const penaInput = document.getElementById('input-pena_atual');
                 if (penaInput) {
@@ -1613,7 +1814,7 @@
 
                 if (resultadoCrimes) {
                     if (analise.encontrados.length === 0) {
-                        resultadoCrimes.innerText = "NENHUM CRIME FOI IDENTIFICADO COM SEGURANÇA. TENTE ENVIAR UMA IMAGEM MAIS NÍTIDA, COM A FICHA INTEIRA E SEM CORTES.";
+                        resultadoCrimes.innerText = "NENHUM CRIME FOI IDENTIFICADO DENTRO DA ÁREA DA FICHA CRIMINAL. SELECIONE MANUALMENTE APENAS A TABELA/LISTA DE CRIMES E TENTE NOVAMENTE.";
                     } else {
                         const linhas = analise.encontrados.map(item =>
                             `${item.quantidade}X - ART. ${item.art} — ${item.crime} | PENA: ${item.pena}M CADA | SUBTOTAL: ${item.subtotal}M | CONFIANÇA: ${item.confiancaTexto} | ${item.motivoTexto}`
@@ -1629,13 +1830,17 @@
                 }
 
                 if (debugOCR) {
-                    debugOCR.innerText = "TEXTO LIDO PELO OCR:\n\n" + text;
+                    debugOCR.innerText = "TEXTO LIDO APENAS DA ÁREA DA FICHA CRIMINAL:\n\n" + textoFicha;
                     debugOCR.classList.remove("hidden");
                 }
             } catch (err) {
-                statusDiv.innerText = "❌ FALHA AO PROCESSAR A IMAGEM COM A IA LOCAL.";
-                if (resultadoCrimes) resultadoCrimes.innerText = "TENTE UMA IMAGEM MAIS NÍTIDA OU OUTRO FORMATO DE PRINT.";
+                statusDiv.innerText = "❌ FALHA AO ANALISAR A ÁREA DA FICHA CRIMINAL.";
+                if (resultadoCrimes) resultadoCrimes.innerText = "TENTE SELECIONAR MANUALMENTE SOMENTE A ÁREA DOS CRIMES.";
             }
+        }
+
+        async function processarImagem(event) {
+            await prepararImagemFicha(event);
         }
 
         function gerarTemplate() {
