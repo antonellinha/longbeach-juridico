@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Protocolos & Modelos - Long Beach</title>
+    <!-- Tesseract.js para leitura OCR local das capturas de ecrã das fichas criminais -->
+    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0f172a; color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; padding: 2rem 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
+        h1 { color: #38bdf8; font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        header p { color: #94a3b8; font-size: 0.875rem; }
+        
+        .grid-principal { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 1024px) { .grid-principal { grid-template-columns: 1fr 2fr; } }
+        
+        .card { background-color: #1e293b; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); margin-bottom: 1.5rem; }
+        h2 { font-size: 1.125rem; font-weight: 600; color: #38bdf8; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .grupo-campo { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; tracking: 0.05em; }
+        input, select, textarea { width: 100%; background-color: #334155; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.65rem; font-size: 0.875rem; color: #fff; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+        
+        .campos-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 640px) { .campos-grid { grid-template-columns: 1fr 1fr; } }
+        .full-width { grid-column: span 1 / span 1; }
+        @media (min-width: 640px) { .full-width { grid-column: span 2 / span 2; } }
+        
+        /* Estilos específicos para Cabeçalhos de Secções no Formulário */
+        .seccao-divisor {
+            grid-column: span 1 / span 1;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.35rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        @media (min-width: 640px) { .seccao-divisor { grid-column: span 2 / span 2; } }
+        .seccao-divisor h3 {
+            color: #38bdf8;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Botões */
+        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; text-transform: uppercase; }
+        .btn-gerar:hover { background-color: #10b981; }
+        
+        .btn-discord { background-color: #5865F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-discord:hover { background-color: #4752C4; }
+        .btn-discord:disabled { background-color: #475569; cursor: not-allowed; }
+        
+        .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.5rem; }
+        .btn-copiar { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-copiar:hover { background-color: #475569; }
+        
+        #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; resize: vertical; height: 350px; }
+        
+        .btn-upload { background-color: #2563eb; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; display: inline-block; text-align: center; margin-top: 0.5rem; }
+        .btn-upload:hover { background-color: #1d4ed8; }
+        .hidden { display: none !important; }
+        .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; font-weight: 500; }
+
+        /* Estilização moderna para o Toast Banner de Cópia e Notificação */
+        #toast-copy {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #toast-copy.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Sistema de Protocolos & Modelos</h1>
+            <p>Long Beach Judicial Department</p>
+        </header>
+
+        <div class="grid-principal">
+            
+            <!-- COLUNA DA ESQUERDA -->
+            <div>
+                <!-- IDENTIFICAÇÃO DO ADVOGADO -->
+                <div class="card">
+                    <h2>⚖️ Identificação do Advogado</h2>
+                    <div class="grupo-campo">
+                        <label>Nome do Advogado</label>
+                        <input type="text" id="adv-nome" placeholder="Ex: Dr. John Doe">
+                    </div>
+                </div>
+
+                <!-- CONFIGURAÇÃO DO DISCORD WEBHOOK (Armazenamento Local e Seguro) -->
+                <div class="card" style="border-color: #5865F2;">
+                    <h2 style="color: #5865F2;">⚙️ Configuração do Canal (Discord)</h2>
+                    <p style="font-size: 0.725rem; color: #94a3b8; margin-bottom: 0.75rem; line-height: 1.3;">O link do Webhook é guardado no seu computador, impedindo que pessoas de fora vejam.</p>
+                    <div class="grupo-campo">
+                        <label>URL do Webhook do Discord</label>
+                        <input type="password" id="discord-webhook" placeholder="https://discord.com/api/webhooks/..." onchange="salvarWebhook()">
+                    </div>
+                </div>
+
+                <!-- SELEÇÃO DO SERVIÇO -->
+                <div class="card">
+                    <div class="grupo-campo">
+                        <label>Selecione o Serviço:</label>
+                        <select id="select-template" onchange="alternarCampos()">
+                            <option value="1">1. Troca de Nome</option>
+                            <option value="2_adocao">2. Adoção</option>
+                            <option value="2_nascimento">2. Nascimento</option>
+                            <option value="3">3. Casamento</option>
+                            <option value="4">4. CNPJ (Abertura/Renovação)</option>
+                            <option value="5">5. Limpeza de Ficha</option>
+                            <option value="6">6. Porte de Arma</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo unicamente para Limpeza de Ficha) -->
+                <div id="area-ocr" class="card hidden">
+                    <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal para somar os meses automaticamente.</p>
+                    <label class="btn-upload">
+                        Escolher Ficheiro
+                        <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="processarImagem(event)">
+                    </label>
+                    <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
+                    <div id="status-ocr" class="status-ia"></div>
+                </div>
+            </div>
+
+            <!-- COLUNA DA DIREITA -->
+            <div>
+                <!-- CAMPOS DINÂMICOS DO FORMULÁRIO -->
+                <div class="card">
+                    <h2 style="color: white; font-size: 1.25rem;">Dados do Requerimento</h2>
+                    <div id="campos-dinamicos" class="campos-grid">
+                        <!-- Injetado dinamicamente via JavaScript -->
+                    </div>
+                    <button onclick="gerarTemplate()" class="btn-gerar">Gerar Modelo Formatado</button>
+                </div>
+
+                <!-- CAMPO DE SAÍDA DO TEXTO FORMATADO -->
+                <div class="card">
+                    <div class="flex-header">
+                        <h2>Modelo Pronto (Discord)</h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="btn-postar" onclick="enviarParaDiscord()" class="btn-discord">🚀 Postar Embed</button>
+                            <button onclick="copiarTexto()" class="btn-copiar">📄 Copiar Texto</button>
+                        </div>
+                    </div>
+                    <textarea id="output-template" readonly></textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Banner flutuante de confirmação Toast -->
+    <div id="toast-copy">
+        <span id="toast-emoji">✅</span> <span id="toast-text">Modelo copiado com sucesso!</span>
+    </div>
+
+    <script>
+        // Webhook padrão fornecido pelo utilizador para carregar na inicialização
+        const webhookPadrao = "https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm";
+
+        // Estruturas de dados refinadas com secções visuais
+        const layouts = {
+            "1": [
+                { type: 'seccao', label: 'Dados do Requerente' },
+                { id: 'nome_atual', label: 'Nome Atual', placeholder: 'Nome do Cliente' },
+                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome do Cliente' },
+                { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+                { type: 'seccao', label: 'Motivação' },
+                { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+            ],
+            "2_adocao": [
+                { type: 'seccao', label: 'Dados da Criança/Adulto' },
+                { id: 'nome_crianca', label: 'Nome da Criança|Adulto', placeholder: 'Nome do adotado' },
+                { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Novo nome em caso de retificação' },
+                { id: 'id_crianca', label: 'ID da Criança|Adulto', placeholder: 'ID' },
+                { type: 'seccao', label: 'Dados dos Responsáveis' },
+                { id: 'pai_mae_1', label: 'Nome Responsável 1', placeholder: 'Nome Completo' },
+                { id: 'id_pai_mae_1', label: 'ID Responsável 1', placeholder: 'ID' },
+                { id: 'pai_mae_2', label: 'Nome Responsável 2', placeholder: 'Nome Completo' },
+                { id: 'id_pai_mae_2', label: 'ID Responsável 2', placeholder: 'ID' },
+                { type: 'seccao', label: 'Valores e Requerimento' },
+                { id: 'data_adocao', label: 'Data Adoção (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'data_req', label: 'Data Requerimento', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total (Ex: 100000)' },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "2_nascimento": [
+                { type: 'seccao', label: 'Dados do Recém-Nascido' },
+                { id: 'nome_crianca', label: 'Nome da Criança', placeholder: 'Nome do recém-nascido' },
+                { id: 'id_crianca', label: 'ID da Criança', placeholder: 'ID' },
+                { type: 'seccao', label: 'Dados dos Pais' },
+                { id: 'pai_mae_1', label: 'Nome PAI|MÃE 1', placeholder: 'Nome' },
+                { id: 'id_pai_mae_1', label: 'ID PAI|MÃE 1', placeholder: 'ID' },
+                { id: 'pai_mae_2', label: 'Nome PAI|MÃE 2', placeholder: 'Nome' },
+                { id: 'id_pai_mae_2', label: 'ID PAI|MÃE 2', placeholder: 'ID' },
+                { type: 'seccao', label: 'Informações Médicas' },
+                { id: 'medico', label: 'Nome do Médico', placeholder: 'Nome do Médico' },
+                { id: 'id_medico', label: 'ID Médico', placeholder: 'ID' },
+                { type: 'seccao', label: 'Valores e Datas' },
+                { id: 'data_nasc', label: 'Data de Nascimento (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "3": [
+                { type: 'seccao', label: 'Cônjuge 1' },
+                { id: 'c1_nome', label: 'Nome Completo Cônjuge 1', placeholder: 'Nome do Cliente' },
+                { id: 'c1_id', label: 'ID Cônjuge 1', placeholder: 'ID' },
+                { id: 'c1_tel', label: 'Telefone Cônjuge 1', placeholder: 'Telefone' },
+                { id: 'c1_sexo', label: 'Sexo Cônjuge 1', placeholder: 'M/F' },
+                { type: 'seccao', label: 'Cônjuge 2' },
+                { id: 'c2_nome', label: 'Nome Completo Cônjuge 2', placeholder: 'Nome do Cliente' },
+                { id: 'c2_id', label: 'ID Cônjuge 2', placeholder: 'ID' },
+                { id: 'c2_tel', label: 'Telefone Cônjuge 2', placeholder: 'Telefone' },
+                { id: 'c2_sexo', label: 'Sexo Cônjuge 2', placeholder: 'M/F' },
+                { type: 'seccao', label: 'Casamento & Retificações' },
+                { id: 'data_casamento', label: 'Data Casamento (Se anterior ao requerimento)', placeholder: 'XX/XX/2026', valorFixo: '21/06/2026' },
+                { id: 'c1_nome_ret', label: 'Nome Retificado Cônjuge 1', placeholder: 'Nome retificado após casamento' },
+                { id: 'c1_id_ret', label: 'ID Cônjuge 1 Retificado', placeholder: 'ID' },
+                { id: 'c2_nome_ret', label: 'Nome Retificado Cônjuge 2', placeholder: 'Nome retificado após casamento' },
+                { id: 'c2_id_ret', label: 'ID Cônjuge 2 Retificado', placeholder: 'ID' },
+                { type: 'seccao', label: 'Valores' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor' },
+                { id: 'valor_jur', label: 'Valor Jurídico (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado (50%)', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "4": [
+                { type: 'seccao', label: 'Dados da Empresa' },
+                { id: 'empresa', label: 'Empresa', placeholder: 'Nome da Empresa' },
+                { id: 'solicitacao', label: 'Solicitação', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO', 'AUMENTO DE FUNCIONARIOS'] },
+                { id: 'num_func', label: 'Número de Funcionários', placeholder: 'Empresas 20 | Restaurante 15' },
+                { id: 'descricao', label: 'Descrição da Empresa', placeholder: 'Atividade comercial da empresa' },
+                { type: 'seccao', label: 'Dados dos Sócios' },
+                { id: 'socio1', label: 'Sócio 01', placeholder: 'Nome do Sócio 1' },
+                { id: 'id_socio1', label: 'ID Sócio 01', placeholder: 'ID' },
+                { id: 'tel_socio1', label: 'Telefone Sócio 01', placeholder: 'Telefone' },
+                { id: 'socio2', label: 'Sócio 02', placeholder: 'Nome do Sócio 2' },
+                { id: 'id_socio2', label: 'ID Sócio 02', placeholder: 'ID' },
+                { id: 'tel_socio2', label: 'Telefone Sócio 02', placeholder: 'Telefone' },
+                { type: 'seccao', label: 'Vigência e Faturação' },
+                { id: 'mes_vigente', label: 'Mês Vigente', placeholder: 'Mês vigente', valorFixo: 'Junho/2026' },
+                { id: 'valor', label: 'Valor Total', placeholder: 'Digite o valor total' },
+                { id: 'valor_jur', label: 'Valor Jurídico', placeholder: 'Auto-calculado', valorFixo: '', readonly: true },
+                { id: 'valor_adv', label: 'Valor Advogado', placeholder: 'Auto-calculado', valorFixo: '', readonly: true }
+            ],
+            "5": [
+                { type: 'seccao', label: 'Dados do Requerente' },
+                { id: 'nome_completo', label: 'Nome Completo do Requerente', placeholder: 'Nome do Cliente' },
+                { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+                { type: 'seccao', label: 'Histórico Penal' },
+                { id: 'pena_atual', label: 'Meses Totais de Pena (IA)', placeholder: 'Aguardando captura de ecrã...', valorFixo: '0M' },
+                { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+                { id: 'data', label: 'Data', placeholder: '23/02/2025', valorFixo: '23/02/2025' }
+            ],
+            "6": [
+                { type: 'seccao', label: 'Requerente do Porte' },
+                { id: 'nome_completo', label: 'Nome Completo do Requerente', placeholder: 'Nome do Cliente' },
+                { id: 'id_req', label: 'ID do Requerente', placeholder: 'XXXX' },
+                { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' },
+                { type: 'seccao', label: 'Análise de Aptidão' },
+                { id: 'ficha_limpa', label: 'Há Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] },
+                { id: 'armamento', label: 'Armamento (Selecione as opções desejadas)', type: 'checkboxes', options: ['M911', 'Mossberg 590', 'Steyr AUG'] },
+                { id: 'motivo', label: 'Motivo', placeholder: 'XXXXX/SE HOUVER' },
+                { id: 'data', label: 'Data', placeholder: 'XX/XX/20XX', valorFixo: '21/06/2026' }
+            ]
+        };
+
+        const nomesRequerimentos = {
+            "1": "TROCA DE NOME",
+            "2_adocao": "ADOÇÃO",
+            "2_nascimento": "NASCIMENTO",
+            "3": "CASAMENTO",
+            "4": "ABERTURA, RENOVAÇÃO E AUMENTO DE FUNCIONÁRIOS DE CNPJ'S",
+            "5": "LIMPEZA DE FICHA",
+            "6": "PORTE DE ARMA"
+        };
+
+        // Salvar e Carregar Webhook do LocalStorage (Preserva as informações)
+        function salvarWebhook() {
+            const webhookUrl = document.getElementById('discord-webhook').value;
+            localStorage.setItem('lb_discord_webhook', webhookUrl);
+            mostrarToast("⚙️", "Configurações do canal atualizadas com sucesso!");
+        }
+
+        function carregarWebhook() {
+            const salvo = localStorage.getItem('lb_discord_webhook');
+            if (salvo) {
+                document.getElementById('discord-webhook').value = salvo;
+            } else {
+                // Preencher com o webhook padrão caso o utilizador não tenha configurado nenhum anteriormente
+                document.getElementById('discord-webhook').value = webhookPadrao;
+                localStorage.setItem('lb_discord_webhook', webhookPadrao);
+            }
+        }
+
+        function alternarCampos() {
+            const escolha = document.getElementById('select-template').value;
+            const container = document.getElementById('campos-dinamicos');
+            container.innerHTML = '';
+
+            // REGRA: Mostrar área OCR de análise APENAS para a opção "Limpeza de Ficha" (5)
+            const areaOcr = document.getElementById('area-ocr');
+            if (escolha === "5") {
+                areaOcr.classList.remove('hidden');
+            } else {
+                areaOcr.classList.add('hidden');
+            }
+
+            layouts[escolha].forEach(campo => {
+                if (campo.type === 'seccao') {
+                    const divisor = document.createElement('div');
+                    divisor.className = 'seccao-divisor';
+                    const h3 = document.createElement('h3');
+                    h3.innerText = campo.label;
+                    divisor.appendChild(h3);
+                    container.appendChild(divisor);
+                    return;
+                }
+
+                const div = document.createElement('div');
+                if (campo.id === 'descricao' || campo.id === 'motivo' || campo.type === 'checkboxes') {
+                    div.className = 'full-width';
+                }
+                
+                const label = document.createElement('label');
+                label.innerText = campo.label;
+                div.appendChild(label);
+
+                if (campo.type === 'select') {
+                    const input = document.createElement('select');
+                    input.id = `input-${campo.id}`;
+                    campo.options.forEach(opt => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = opt;
+                        optionElement.innerText = opt;
+                        input.appendChild(optionElement);
+                    });
+                    div.appendChild(input);
+                } else if (campo.type === 'checkboxes') {
+                    const wrapCheckboxes = document.createElement('div');
+                    wrapCheckboxes.style.display = 'flex';
+                    wrapCheckboxes.style.gap = '1.25rem';
+                    wrapCheckboxes.style.marginTop = '0.5rem';
+                    wrapCheckboxes.style.flexWrap = 'wrap';
+
+                    campo.options.forEach(opt => {
+                        const itemLabel = document.createElement('label');
+                        itemLabel.style.display = 'flex';
+                        itemLabel.style.alignItems = 'center';
+                        itemLabel.style.gap = '0.5rem';
+                        itemLabel.style.fontSize = '0.875rem';
+                        itemLabel.style.textTransform = 'none';
+                        itemLabel.style.cursor = 'pointer';
+                        itemLabel.style.color = '#fff';
+
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.name = campo.id;
+                        checkbox.value = opt;
+                        checkbox.style.width = 'auto';
+
+                        itemLabel.appendChild(checkbox);
+                        itemLabel.appendChild(document.createTextNode(opt));
+                        wrapCheckboxes.appendChild(itemLabel);
+                    });
+                    div.appendChild(wrapCheckboxes);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = `input-${campo.id}`;
+                    input.placeholder = campo.placeholder;
+                    input.value = campo.valorFixo || '';
+
+                    if (campo.readonly) {
+                        input.readOnly = true;
+                        input.style.backgroundColor = '#1e293b';
+                        input.style.borderColor = '#475569';
+                        input.style.color = '#38bdf8';
+                    }
+                    div.appendChild(input);
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        // Calcule as taxas nos layouts corretos
+        document.getElementById('campos-dinamicos').addEventListener('input', calcularValores);
+        document.getElementById('campos-dinamicos').addEventListener('change', calcularValores);
+
+        function calcularValores() {
+            const escolha = document.getElementById('select-template').value;
+            const valorInput = document.getElementById('input-valor');
+            if (!valorInput) return;
+
+            let valorTexto = valorInput.value.replace(/[^0-9]/g, '');
+            let valorNum = parseInt(valorTexto, 10) || 0;
+
+            let pctAdv = 0.50;
+            let pctJur = 0.50;
+
+            if (escolha === "4") {
+                const solicitacao = document.getElementById('input-solicitacao')?.value;
+                if (solicitacao === "RENOVAÇÃO") {
+                    pctAdv = 0.40;
+                    pctJur = 0.60;
+                } else {
+                    pctAdv = 0.60;
+                    pctJur = 0.40;
+                }
+            }
+
+            const valorAdv = Math.round(valorNum * pctAdv);
+            const valorJur = Math.round(valorNum * pctJur);
+
+            const formatarNumero = (num) => {
+                return num.toLocaleString('pt-PT');
+            };
+
+            const advInput = document.getElementById('input-valor_adv');
+            const jurInput = document.getElementById('input-valor_jur');
+            
+            if (advInput) advInput.value = valorAdv > 0 ? `${formatarNumero(valorAdv)}` : '';
+            if (jurInput) jurInput.value = valorJur > 0 ? `${formatarNumero(valorJur)}` : '';
+        }
+
+        function processarImagem(event) {
+            const file = event.target.files[0];
+            const statusDiv = document.getElementById('status-ocr');
+            const nomeArquivo = document.getElementById('nome-arquivo');
+            
+            if (!file) return;
+            nomeArquivo.innerText = file.name;
+            statusDiv.innerText = "🔄 Analisando captura de ecrã via OCR... Aguarde.";
+
+            Tesseract.recognize(file, 'por+eng').then(({ data: { text } }) => {
+                const regexMeses = /(\d+)\s*(?:M|m|meses|mes)/g;
+                let totalMeses = 0;
+                let correspondencia;
+
+                while ((correspondencia = regexMeses.exec(text)) !== null) {
+                    totalMeses += parseInt(correspondencia[1], 10);
+                }
+
+                statusDiv.innerText = `✅ Sucesso! Total extraído: ${totalMeses}M`;
+
+                const penaInput = document.getElementById('input-pena_atual');
+                if (penaInput) {
+                    penaInput.value = `${totalMeses}M`;
+                }
+            }).catch(err => {
+                statusDiv.innerText = "❌ Falha ao processar a imagem localmente.";
+            });
+        }
+
+        function gerarTemplate() {
+            const escolha = document.getElementById('select-template').value;
+            const advNome = document.getElementById('adv-nome').value || "Não informado";
+            const nomeReqAutomatico = nomesRequerimentos[escolha];
+            
+            let resultado = `**Advogado Responsável:** ${advNome}\n\n\`\`\`md\n`;
+            const pegarValor = (id) => document.getElementById(`input-${id}`)?.value || "XXXX";
+
+            if (escolha === "1") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[NOME ATUAL][${pegarValor('nome_atual')}]\n[NOME RETIFICADO][${pegarValor('nome_retificado')}]\n[ID DO REQUERENTE][${pegarValor('id_req')}]\n[TELEFONE][${pegarValor('telefone')}]\n[MOTIVO][${pegarValor('motivo')}]\n[DATA][${pegarValor('data')}]`;
+            } 
+            else if (escolha === "2_adocao") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[NOME DA CRIANÇA|ADULTO][${pegarValor('nome_crianca')}][NOME RETIFICADO][${pegarValor('nome_retificado')}][ID][${pegarValor('id_crianca')}]\n[NOME RESPONSÁVEL 1][${pegarValor('pai_mae_1')}][ID][${pegarValor('id_pai_mae_1')}]\n[NOME RESPONSÁVEL 2][${pegarValor('pai_mae_2')}][ID][${pegarValor('id_pai_mae_2')}]\n[DATA ADOÇÃO][${pegarValor('data_adocao')}]\n\n[VALOR TOTAL][${pegarValor('valor')}][DATA REQUERIMENTO][${pegarValor('data_req')}]\n[VALOR ADVOGADO][${pegarValor('valor_adv')}][VALOR JURIDICO][${pegarValor('valor_jur')}]`;
+            }
+            else if (escolha === "2_nascimento") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[NOME DA CRIANÇA][${pegarValor('nome_crianca')}][ID DA CRIANÇA][${pegarValor('id_crianca')}]\n[NOME PAI|MÃE 1][${pegarValor('pai_mae_1')}][ID PAI|MÃE 1][${pegarValor('id_pai_mae_1')}]\n[NOME PAI|MÃE 2][${pegarValor('pai_mae_2')}][ID PAI|MÃE 2][${pegarValor('id_pai_mae_2')}]\n[NOME DO MÉDICO][${pegarValor('medico')}][ID MÉDICO][${pegarValor('id_medico')}]\n[DATA DE NASCIMENTO][${pegarValor('data_nasc')}]\n\n[VALOR][${pegarValor('valor')}]\n[VALOR JURIDICO][${pegarValor('valor_jur')}]\n[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
+            }
+            else if (escolha === "3") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[NOME COMPLETO CÔNJUGE 1][${pegarValor('c1_nome')}][ID CÔNJUGE 1][${pegarValor('c1_id')}]\n[TELEFONE CÔNJUGE 1][${pegarValor('c1_tel')}][SEXO CÔNJUGE 1][${pegarValor('c1_sexo')}]\n[NOME COMPLETO CÔNJUGE 2][${pegarValor('c2_nome')}][ID CÔNJUGE 2][${pegarValor('c2_id')}]\n[TELEFONE CÔNJUGE 2][${pegarValor('c2_tel')}][SEXO CÔNJUGE 2][${pegarValor('c2_sexo')}]\n[DATA CASAMENTO][${pegarValor('data_casamento')}]\n[NOME RETIFICADO CÔNJUGE 1][${pegarValor('c1_nome_ret')}][ID CÔNJUGE 1 RETIFICADO][${pegarValor('c1_id_ret')}]\n[NOME RETIFICADO CÔNJUGE 2][${pegarValor('c2_nome_ret')}][ID CÔNJUGE 2 RETIFICADO][${pegarValor('c2_id_ret')}]\n\n[VALOR][${pegarValor('valor')}]\n[VALOR JURIDICO][${pegarValor('valor_jur')}]\n[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
+            }
+            else if (escolha === "4") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[EMPRESA][${pegarValor('empresa')}]\n[SÓCIO 01][${pegarValor('socio1')}][ID SÓCIO 01][${pegarValor('id_socio1')}][TELEFONE SÓCIO 01][${pegarValor('tel_socio1')}]\n[SÓCIO 02][${pegarValor('socio2')}][ID SÓCIO 02][${pegarValor('id_socio2')}][TELEFONE SÓCIO 02][${pegarValor('tel_socio2')}]\n[SOLICITAÇÃO][${pegarValor('solicitacao')}][NÚMERO DE FUNCIONÁRIOS][${pegarValor('num_func')}]\n[DESCRIÇÃO DA EMPRESA][${pegarValor('descricao')}]\n[MÊS VIGENTE][${pegarValor('mes_vigente')}]\n\n[VALOR][${pegarValor('valor')}]\n[VALOR JURIDICO][${pegarValor('valor_jur')}]\n[VALOR ADVOGADO][${pegarValor('valor_adv')}]`;
+            }
+            else if (escolha === "5") {
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[NOME COMPLETO DO REQUERENTE][${pegarValor('nome_completo')}]\n[ID DO REQUERENTE][${pegarValor('id_req')}]\n[TELEFONE][${pegarValor('telefone')}]\n[PENA DETECTADA][${pegarValor('pena_atual')}]\n[MOTIVO][${pegarValor('motivo')}]\n[DATA][${pegarValor('data')}]`;
+            }
+            else if (escolha === "6") {
+                const checkboxes = document.querySelectorAll('input[name="armamento"]:checked');
+                const selecionados = Array.from(checkboxes).map(cb => cb.value).join(' / ') || 'Nenhum';
+                
+                resultado += `[REQUERIMENTO][${nomeReqAutomatico}]\n\n[NOME COMPLETO DO REQUERENTE][${pegarValor('nome_completo')}]\n[ID DO REQUERENTE][${pegarValor('id_req')}]\n[TELEFONE][${pegarValor('telefone')}]\n[HÁ FICHA LIMPA?][${pegarValor('ficha_limpa')}]\n[ARMAMENTO][${selecionados}]\n[MOTIVO][${pegarValor('motivo')}]\n[DATA][${pegarValor('data')}]`;
+            }
+
+            resultado += `\n\`\`\``;
+            document.getElementById('output-template').value = resultado;
+        }
+
+        async function enviarParaDiscord() {
+            const webhookUrl = document.getElementById('discord-webhook').value;
+            const output = document.getElementById('output-template').value;
+
+            if (!webhookUrl) {
+                mostrarToast("❌", "Defina a URL do webhook do Discord primeiro!");
+                return;
+            }
+
+            if (!output) {
+                mostrarToast("⚠️", "Gere o modelo formatado antes de postar!");
+                return;
+            }
+
+            const btn = document.getElementById('btn-postar');
+            btn.disabled = true;
+            btn.innerText = "⏳ Enviando...";
+
+            const escolha = document.getElementById('select-template').value;
+            const advNome = document.getElementById('adv-nome').value || "Não informado";
+            const nomeReqAutomatico = nomesRequerimentos[escolha];
+
+            // Construir campos do Embed de forma elegante e limpa
+            const pegarValor = (id) => document.getElementById(`input-${id}`)?.value || "XXXX";
+            const fields = [];
+
+            fields.push({ name: "⚖️ Advogado Responsável", value: advNome, inline: true });
+            fields.push({ name: "📋 Protocolo", value: nomeReqAutomatico, inline: true });
+
+            if (escolha === "1") {
+                fields.push({ name: "👤 Requerente (Nome Atual)", value: pegarValor('nome_atual'), inline: true });
+                fields.push({ name: "📝 Nome Retificado", value: pegarValor('nome_retificado'), inline: true });
+                fields.push({ name: "🆔 ID", value: pegarValor('id_req'), inline: true });
+                fields.push({ name: "📞 Telefone", value: pegarValor('telefone'), inline: true });
+                fields.push({ name: "❓ Motivo", value: pegarValor('motivo'), inline: false });
+            } 
+            else if (escolha === "2_adocao") {
+                fields.push({ name: "👶 Adotado", value: `${pegarValor('nome_crianca')} (Novo: ${pegarValor('nome_retificado')})`, inline: false });
+                fields.push({ name: "🆔 ID Adotado", value: pegarValor('id_crianca'), inline: true });
+                fields.push({ name: "👪 Responsável 1", value: `${pegarValor('pai_mae_1')} (ID: ${pegarValor('id_pai_mae_1')})`, inline: true });
+                fields.push({ name: "👪 Responsável 2", value: `${pegarValor('pai_mae_2')} (ID: ${pegarValor('id_pai_mae_2')})`, inline: true });
+                fields.push({ name: "📅 Data de Adoção", value: pegarValor('data_adocao'), inline: true });
+                fields.push({ name: "💵 Valor Total", value: `R$ ${pegarValor('valor')}`, inline: true });
+                fields.push({ name: "💼 Divisão de Honorários", value: `Advogado (50%): R$ ${pegarValor('valor_adv')}\nJurídico (50%): R$ ${pegarValor('valor_jur')}`, inline: false });
+            }
+            else if (escolha === "2_nascimento") {
+                fields.push({ name: "👶 Recém-Nascido", value: pegarValor('nome_crianca'), inline: true });
+                fields.push({ name: "🆔 ID Bebê", value: pegarValor('id_crianca'), inline: true });
+                fields.push({ name: "👪 Mãe/Pai 1", value: `${pegarValor('pai_mae_1')} (ID: ${pegarValor('id_pai_mae_1')})`, inline: true });
+                fields.push({ name: "👪 Mãe/Pai 2", value: `${pegarValor('pai_mae_2')} (ID: ${pegarValor('id_pai_mae_2')})`, inline: true });
+                fields.push({ name: "🩺 Médico Responsável", value: `${pegarValor('medico')} (ID: ${pegarValor('id_medico')})`, inline: true });
+                fields.push({ name: "📅 Nascimento", value: pegarValor('data_nasc'), inline: true });
+                fields.push({ name: "💵 Valor Total", value: `R$ ${pegarValor('valor')}`, inline: true });
+                fields.push({ name: "💼 Divisão", value: `Advogado (50%): R$ ${pegarValor('valor_adv')}\nJurídico (50%): R$ ${pegarValor('valor_jur')}`, inline: false });
+            }
+            else if (escolha === "3") {
+                fields.push({ name: "💍 Cônjuge 1", value: `${pegarValor('c1_nome')} (ID: ${pegarValor('c1_id')} / Tel: ${pegarValor('c1_tel')})`, inline: false });
+                fields.push({ name: "💍 Cônjuge 2", value: `${pegarValor('c2_nome')} (ID: ${pegarValor('c2_id')} / Tel: ${pegarValor('c2_tel')})`, inline: false });
+                fields.push({ name: "📝 Nomes Retificados", value: `Cônjuge 1: ${pegarValor('c1_nome_ret')} (ID: ${pegarValor('c1_id_ret')})\nCônjuge 2: ${pegarValor('c2_nome_ret')} (ID: ${pegarValor('c2_id_ret')})`, inline: false });
+                fields.push({ name: "📅 Data Casamento", value: pegarValor('data_casamento'), inline: true });
+                fields.push({ name: "💵 Valor", value: `R$ ${pegarValor('valor')}`, inline: true });
+                fields.push({ name: "💼 Repasse", value: `Advogado: R$ ${pegarValor('valor_adv')} | Jurídico: R$ ${pegarValor('valor_jur')}`, inline: false });
+            }
+            else if (escolha === "4") {
+                fields.push({ name: "🏢 Empresa / CNPJ", value: pegarValor('empresa'), inline: true });
+                fields.push({ name: "📋 Tipo Solicitado", value: pegarValor('solicitacao'), inline: true });
+                fields.push({ name: "👥 Sócios", value: `Sócio 1: ${pegarValor('socio1')} (ID: ${pegarValor('id_socio1')} / Tel: ${pegarValor('tel_socio1')})\nSócio 2: ${pegarValor('socio2')} (ID: ${pegarValor('id_socio2')} / Tel: ${pegarValor('tel_socio2')})`, inline: false });
+                fields.push({ name: "📊 Total de Funcionários", value: pegarValor('num_func'), inline: true });
+                fields.push({ name: "📅 Mês Vigente", value: pegarValor('mes_vigente'), inline: true });
+                fields.push({ name: "💵 Valor Faturado", value: `R$ ${pegarValor('valor')}`, inline: true });
+                fields.push({ name: "💼 Divisão de Honorários", value: `Advogado: R$ ${pegarValor('valor_adv')} | Jurídico: R$ ${pegarValor('valor_jur')}`, inline: false });
+            }
+            else if (escolha === "5") {
+                fields.push({ name: "👤 Requerente", value: pegarValor('nome_completo'), inline: true });
+                fields.push({ name: "🆔 ID", value: pegarValor('id_req'), inline: true });
+                fields.push({ name: "📞 Telefone", value: pegarValor('telefone'), inline: true });
+                fields.push({ name: "⚖️ Pena a Limpar", value: pegarValor('pena_atual'), inline: true });
+                fields.push({ name: "❓ Motivação", value: pegarValor('motivo'), inline: false });
+            }
+            else if (escolha === "6") {
+                const checkboxes = document.querySelectorAll('input[name="armamento"]:checked');
+                const armamentos = Array.from(checkboxes).map(cb => cb.value).join(' / ') || 'Nenhum';
+                fields.push({ name: "👤 Requerente", value: pegarValor('nome_completo'), inline: true });
+                fields.push({ name: "🆔 ID", value: pegarValor('id_req'), inline: true });
+                fields.push({ name: "📞 Telefone", value: pegarValor('telefone'), inline: true });
+                fields.push({ name: "🛡️ Ficha Limpa?", value: pegarValor('ficha_limpa'), inline: true });
+                fields.push({ name: "🔫 Armamento", value: armamentos, inline: false });
+                fields.push({ name: "❓ Motivação", value: pegarValor('motivo'), inline: false });
+            }
+
+            // Payloads de Embed do Discord
+            const payload = {
+                username: "Long Beach Justice Department",
+                avatar_url: "https://placehold.co/150x150/0f172a/38bdf8?text=LBJD",
+                embeds: [{
+                    title: `⚖️ NOVO PROTOCOLO: ${nomeReqAutomatico}`,
+                    color: 3719160, // Emerald Green (#38bdf8 / #059669)
+                    description: "Um novo requerimento oficial foi assinado e deferido pelo departamento jurídico.",
+                    fields: fields,
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Long Beach Judicial Department • Sistema de Protocolos Automáticos"
+                    }
+                }]
+            };
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    mostrarToast("🚀", "Protocolo publicado com sucesso no Discord!");
+                } else {
+                    mostrarToast("❌", "Erro ao postar. Verifique se o seu Webhook URL está correto.");
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarToast("❌", "Erro de rede ao conectar com o Discord.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🚀 Postar Embed";
+            }
+        }
+
+        // Sistema elegante de Notificações Toast
+        function mostrarToast(emoji, texto) {
+            const toast = document.getElementById('toast-copy');
+            document.getElementById('toast-emoji').innerText = emoji;
+            document.getElementById('toast-text').innerText = texto;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function copiarTexto() {
+            const textarea = document.getElementById('output-template');
+            if (!textarea.value) {
+                mostrarToast("⚠️", "Por favor, gere o modelo primeiro!");
+                return;
+            }
+            textarea.select();
+            document.execCommand('copy');
+            mostrarToast("✅", "Modelo copiado para colar no Discord!");
+        }
+
+        // Inicializar configurações
+        carregarWebhook();
+        alternarCampos();
+    </script>
+</body>
+</html>
