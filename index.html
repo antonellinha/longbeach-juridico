@@ -18,28 +18,24 @@
         .card { background-color: #1e293b; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); margin-bottom: 1.5rem; }
         h2 { font-size: 1.125rem; font-weight: 600; color: #38bdf8; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .grupo-campo { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; tracking: 0.05em; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.35rem; }
         input, select, textarea { width: 100%; background-color: #334155; border: 1px solid #475569; border-radius: 0.5rem; padding: 0.65rem; font-size: 0.875rem; color: #fff; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+        input:focus { border-color: #38bdf8; }
         .campos-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         @media (min-width: 640px) { .campos-grid { grid-template-columns: 1fr 1fr; } }
         .full-width { grid-column: span 1 / span 1; }
         @media (min-width: 640px) { .full-width { grid-column: span 2 / span 2; } }
         .seccao-divisor { grid-column: span 1 / span 1; border-bottom: 1px solid #334155; padding-bottom: 0.35rem; margin-top: 1.25rem; margin-bottom: 0.25rem; }
         @media (min-width: 640px) { .seccao-divisor { grid-column: span 2 / span 2; } }
-        .seccao-divisor h3 { color: #38bdf8; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; text-transform: uppercase; }
+        .seccao-divisor h3 { color: #38bdf8; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; }
+        .btn-gerar { background-color: #059669; color: white; width: 100%; padding: 0.85rem; border: none; border-radius: 0.5rem; font-weight: 700; cursor: pointer; margin-top: 1rem; transition: background 0.2s; }
         .btn-gerar:hover { background-color: #10b981; }
         .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .btn-copiar { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .btn-copiar:hover { background-color: #475569; }
+        .btn-copiar { background-color: #334155; color: white; border: 1px solid #475569; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; cursor: pointer; }
         #output-template { background-color: #090d16; color: #34d399; font-family: monospace; font-size: 0.875rem; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; resize: vertical; height: 350px; }
-        .btn-upload { background-color: #2563eb; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; display: inline-block; text-align: center; margin-top: 0.5rem; }
-        .btn-upload:hover { background-color: #1d4ed8; }
+        .btn-upload { background-color: #2563eb; color: white; font-size: 0.75rem; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
         .hidden { display: none !important; }
-        .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; font-weight: 500; }
-        #toast-copy { position: fixed; bottom: 2rem; right: 2rem; background-color: #059669; color: #ffffff; padding: 1rem 1.5rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 700; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); transform: translateY(150%); transition: transform 0.3s; z-index: 100; }
-        #toast-copy.show { transform: translateY(0); }
+        .status-ia { color: #eab308; font-size: 0.75rem; margin-top: 0.5rem; }
     </style>
 </head>
 <body>
@@ -54,66 +50,59 @@
             <div>
                 <div class="card">
                     <h2>⚖️ Identificação do Advogado</h2>
-                    <div class="grupo-campo">
-                        <label>Nome do Advogado</label>
-                        <input type="text" id="adv-nome" placeholder="Ex: Dr. John Doe">
-                    </div>
+                    <input type="text" id="adv-nome" placeholder="Ex: Dr. John Doe">
                 </div>
                 <div class="card">
-                    <div class="grupo-campo">
-                        <label>Selecione o Serviço:</label>
-                        <select id="select-template" onchange="alternarCampos()">
-                            <option value="1">1. Troca de Nome</option>
-                            <option value="2_adocao">2. Adoção</option>
-                            <option value="2_nascimento">2. Nascimento</option>
-                            <option value="3">3. Casamento</option>
-                            <option value="4">4. CNPJ (Abertura/Renovação)</option>
-                            <option value="5">5. Limpeza de Ficha</option>
-                            <option value="6">6. Porte de Arma</option>
-                        </select>
-                    </div>
+                    <label>Selecione o Serviço:</label>
+                    <select id="select-template" onchange="alternarCampos()">
+                        <option value="1">1. Troca de Nome</option>
+                        <option value="2_adocao">2. Adoção</option>
+                        <option value="2_nascimento">2. Nascimento</option>
+                        <option value="3">3. Casamento</option>
+                        <option value="4">4. CNPJ (Abertura/Renovação)</option>
+                        <option value="5">5. Limpeza de Ficha</option>
+                        <option value="6">6. Porte de Arma</option>
+                    </select>
                 </div>
                 <div id="area-ocr" class="card hidden">
-                    <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
+                    <h2 style="color: #eab308;">🔍 Análise Inteligente</h2>
                     <label class="btn-upload">Escolher Ficheiro<input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="processarImagem(event)"></label>
-                    <span id="nome-arquivo" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">Nenhum ficheiro selecionado</span>
                     <div id="status-ocr" class="status-ia"></div>
                 </div>
             </div>
 
             <div>
                 <div class="card">
-                    <h2 style="color: white; font-size: 1.25rem;">Dados do Requerimento</h2>
+                    <h2 style="color: white;">Dados do Requerimento</h2>
                     <div id="campos-dinamicos" class="campos-grid"></div>
                     <button onclick="gerarTemplate()" class="btn-gerar">Gerar Modelo Formatado</button>
                 </div>
                 <div class="card">
                     <div class="flex-header">
-                        <h2>Modelo Pronto (Discord)</h2>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button id="btn-postar" onclick="enviarParaDiscord()" style="background-color: #5865F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer;">🚀 Postar Embed</button>
-                            <button onclick="copiarTexto()" class="btn-copiar">📄 Copiar Texto</button>
-                        </div>
+                        <h2>Modelo Pronto</h2>
+                        <button onclick="enviarParaDiscord()" style="background-color: #5865F2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">🚀 Postar</button>
+                        <button onclick="copiarTexto()" class="btn-copiar">📄 Copiar</button>
                     </div>
                     <textarea id="output-template" readonly></textarea>
                 </div>
             </div>
         </div>
     </div>
-    <div id="toast-copy">✅ Modelo enviado/copiado com sucesso!</div>
 
     <script>
         const webhookPadrao = "https://discord.com/api/webhooks/1518468540628340766/vUnBae5tnqrI0GpJ0jNP1n6DA61hMCJGzlESkJIlYp7XtTIiS-CQh8LsXuGq8i_urtvm";
         
         const layouts = {
-            "1": [ { type: 'seccao', label: 'Dados' }, { id: 'nome_atual', label: 'Nome Atual', placeholder: 'Nome do Cliente' }, { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome' }, { id: 'id_req', label: 'ID', placeholder: 'ID' }, { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' }, { id: 'motivo', label: 'Motivo', placeholder: 'XXXX' }, { id: 'data', label: 'Data', placeholder: '21/06/2026', valorFixo: '21/06/2026' } ],
-            "2_adocao": [ { type: 'seccao', label: 'Criança/Adulto' }, { id: 'nome_crianca', label: 'Nome', placeholder: 'Nome do adotado' }, { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome' }, { id: 'id_crianca', label: 'ID', placeholder: 'ID' }, { type: 'seccao', label: 'Responsáveis' }, { id: 'pai_mae_1', label: 'Resp 1', placeholder: 'Nome' }, { id: 'id_pai_mae_1', label: 'ID Resp 1', placeholder: 'ID' }, { id: 'pai_mae_2', label: 'Resp 2', placeholder: 'Nome' }, { id: 'id_pai_mae_2', label: 'ID Resp 2', placeholder: 'ID' }, { type: 'seccao', label: 'Valores' }, { id: 'valor', label: 'Valor Total', placeholder: 'Valor' }, { id: 'valor_jur', label: 'Jurídico (50%)', readonly: true }, { id: 'valor_adv', label: 'Advogado (50%)', readonly: true }, { id: 'data_req', label: 'Data', valorFixo: '21/06/2026' } ],
-            "2_nascimento": [ { type: 'seccao', label: 'Recém-Nascido' }, { id: 'nome_crianca', label: 'Nome', placeholder: 'Nome' }, { id: 'id_crianca', label: 'ID', placeholder: 'ID' }, { type: 'seccao', label: 'Pais' }, { id: 'pai_mae_1', label: 'Pai/Mãe 1', placeholder: 'Nome' }, { id: 'id_pai_mae_1', label: 'ID', placeholder: 'ID' }, { id: 'pai_mae_2', label: 'Pai/Mãe 2', placeholder: 'Nome' }, { id: 'id_pai_mae_2', label: 'ID', placeholder: 'ID' }, { type: 'seccao', label: 'Médico' }, { id: 'medico', label: 'Nome Médico', placeholder: 'Nome' }, { id: 'id_medico', label: 'ID', placeholder: 'ID' }, { type: 'seccao', label: 'Valores' }, { id: 'valor', label: 'Valor Total', placeholder: 'Valor' }, { id: 'valor_jur', label: 'Jurídico (50%)', readonly: true }, { id: 'valor_adv', label: 'Advogado (50%)', readonly: true } ],
-            "3": [ { type: 'seccao', label: 'Cônjuges' }, { id: 'c1_nome', label: 'Nome Cônjuge 1', placeholder: 'Nome' }, { id: 'c1_id', label: 'ID 1', placeholder: 'ID' }, { id: 'c2_nome', label: 'Nome Cônjuge 2', placeholder: 'Nome' }, { id: 'c2_id', label: 'ID 2', placeholder: 'ID' }, { type: 'seccao', label: 'Retificação' }, { id: 'c1_nome_ret', label: 'Novo Nome 1', placeholder: 'Nome' }, { id: 'c2_nome_ret', label: 'Novo Nome 2', placeholder: 'Nome' }, { type: 'seccao', label: 'Valores' }, { id: 'valor', label: 'Valor Total', placeholder: 'Valor' }, { id: 'valor_jur', label: 'Jurídico (50%)', readonly: true }, { id: 'valor_adv', label: 'Advogado (50%)', readonly: true } ],
-            "4": [ { type: 'seccao', label: 'Dados' }, { id: 'empresa', label: 'Empresa', placeholder: 'Nome' }, { id: 'solicitacao', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO', 'AUMENTO DE FUNCIONARIOS'] }, { id: 'num_func', label: 'Nº Funcionários', placeholder: '0' }, { id: 'socio1', label: 'Sócio 1', placeholder: 'Nome' }, { id: 'socio2', label: 'Sócio 2', placeholder: 'Nome' }, { type: 'seccao', label: 'Valores' }, { id: 'valor', label: 'Valor Total', placeholder: 'Valor' }, { id: 'valor_jur', label: 'Jurídico', readonly: true }, { id: 'valor_adv', label: 'Advogado', readonly: true } ],
-            "5": [ { type: 'seccao', label: 'Requerente' }, { id: 'nome_completo', label: 'Nome', placeholder: 'Nome' }, { id: 'id_req', label: 'ID', placeholder: 'ID' }, { id: 'pena_atual', label: 'Pena (IA)', readonly: true }, { id: 'motivo', label: 'Motivo', placeholder: 'Motivo' } ],
-            "6": [ { type: 'seccao', label: 'Requerente' }, { id: 'nome_completo', label: 'Nome', placeholder: 'Nome' }, { id: 'id_req', label: 'ID', placeholder: 'ID' }, { id: 'ficha_limpa', type: 'select', options: ['Sim', 'Não'] }, { id: 'armamento', type: 'checkboxes', options: ['M911', 'Mossberg 590', 'Steyr AUG'] }, { id: 'pena_atual', label: 'Pena (IA)', readonly: true } ]
+            "1": [ { id: 'nome_atual', label: 'Nome Atual', placeholder: 'Nome' }, { id: 'nome_retificado', label: 'Nome Retificado', placeholder: 'Nome' }, { id: 'id_req', label: 'ID', placeholder: 'ID' }, { id: 'telefone', label: 'Telefone', placeholder: 'XXXX' }, { id: 'motivo', label: 'Motivo', placeholder: 'XXXX' }, { id: 'data', label: 'Data', valorFixo: '21/06/2026' } ],
+            "2_adocao": [ { id: 'nome_crianca', label: 'Nome Criança|Adulto' }, { id: 'nome_retificado', label: 'Nome Retificado' }, { id: 'id_req', label: 'ID' }, { id: 'pai_mae_1', label: 'Nome Responsável 1' }, { id: 'id_pai_mae_1', label: 'ID Resp 1' }, { id: 'pai_mae_2', label: 'Nome Responsável 2' }, { id: 'id_pai_mae_2', label: 'ID Resp 2' }, { id: 'data_adocao', label: 'Data Adoção', valorFixo: '21/06/2026' }, { id: 'valor', label: 'Valor Total' }, { id: 'valor_jur', label: 'Valor Jurídico', readonly: true }, { id: 'valor_adv', label: 'Valor Advogado', readonly: true }, { id: 'data_req', label: 'Data Req', valorFixo: '21/06/2026' } ],
+            "2_nascimento": [ { id: 'nome_crianca', label: 'Nome Criança' }, { id: 'id_crianca', label: 'ID Criança' }, { id: 'pai_mae_1', label: 'Pai/Mãe 1' }, { id: 'id_pai_mae_1', label: 'ID PAI/MÃE 1' }, { id: 'pai_mae_2', label: 'Pai/Mãe 2' }, { id: 'id_pai_mae_2', label: 'ID PAI/MÃE 2' }, { id: 'medico', label: 'Nome Médico' }, { id: 'id_medico', label: 'ID Médico' }, { id: 'data_nasc', label: 'Data Nasc', valorFixo: '21/06/2026' }, { id: 'valor', label: 'Valor Total' }, { id: 'valor_jur', label: 'Valor Jurídico', readonly: true }, { id: 'valor_adv', label: 'Valor Advogado', readonly: true } ],
+            "3": [ { id: 'c1_nome', label: 'Nome Cônjuge 1' }, { id: 'c1_id', label: 'ID Cônjuge 1' }, { id: 'c1_tel', label: 'Tel Cônjuge 1' }, { id: 'c1_sexo', label: 'Sexo Cônjuge 1' }, { id: 'c2_nome', label: 'Nome Cônjuge 2' }, { id: 'c2_id', label: 'ID Cônjuge 2' }, { id: 'c2_tel', label: 'Tel Cônjuge 2' }, { id: 'c2_sexo', label: 'Sexo Cônjuge 2' }, { id: 'data_casamento', label: 'Data Casamento', valorFixo: '21/06/2026' }, { id: 'c1_nome_ret', label: 'Nome Retificado 1' }, { id: 'c1_id_ret', label: 'ID Retificado 1' }, { id: 'c2_nome_ret', label: 'Nome Retificado 2' }, { id: 'c2_id_ret', label: 'ID Retificado 2' }, { id: 'valor', label: 'Valor' }, { id: 'valor_jur', label: 'Jurídico', readonly: true }, { id: 'valor_adv', label: 'Advogado', readonly: true } ],
+            "4": [ { id: 'empresa', label: 'Empresa' }, { id: 'socio1', label: 'Sócio 01' }, { id: 'id_socio1', label: 'ID Sócio 01' }, { id: 'tel_socio1', label: 'Tel Sócio 01' }, { id: 'socio2', label: 'Sócio 02' }, { id: 'id_socio2', label: 'ID Sócio 02' }, { id: 'tel_socio2', label: 'Tel Sócio 02' }, { id: 'solicitacao', label: 'Solicitação', type: 'select', options: ['ABERTURA', 'RENOVAÇÃO', 'AUMENTO DE FUNCIONARIOS'] }, { id: 'num_func', label: 'Nº Funcionários' }, { id: 'descricao', label: 'Descrição' }, { id: 'mes_vigente', label: 'Mês Vigente', valorFixo: 'Junho/2026' }, { id: 'valor', label: 'Valor' }, { id: 'valor_jur', label: 'Jurídico', readonly: true }, { id: 'valor_adv', label: 'Advogado', readonly: true } ],
+            "5": [ { id: 'nome_completo', label: 'Nome Completo' }, { id: 'id_req', label: 'ID' }, { id: 'telefone', label: 'Telefone' }, { id: 'requerimento', label: 'Requerimento (Pena)', readonly: true }, { id: 'motivo', label: 'Motivo' }, { id: 'data', label: 'Data', valorFixo: '23/02/2025' } ],
+            "6": [ { id: 'nome_completo', label: 'Nome Completo' }, { id: 'id_req', label: 'ID' }, { id: 'telefone', label: 'Telefone' }, { id: 'ficha_limpa', label: 'Ficha Limpa?', type: 'select', options: ['Sim', 'Não'] }, { id: 'requerimento', label: 'Pena (IA)', readonly: true }, { id: 'armamento', label: 'Armamento' }, { id: 'motivo', label: 'Motivo' }, { id: 'data', label: 'Data', valorFixo: '21/06/2026' } ]
         };
+
+        const nomesRequerimentos = { "1": "TROCA DE NOME", "2_adocao": "ADOÇÃO", "2_nascimento": "NASCIMENTO", "3": "CASAMENTO", "4": "CNPJ", "5": "LIMPEZA DE FICHA", "6": "PORTE DE ARMA" };
 
         function alternarCampos() {
             const escolha = document.getElementById('select-template').value;
@@ -121,78 +110,54 @@
             container.innerHTML = '';
             document.getElementById('area-ocr').classList.toggle('hidden', !["5", "6"].includes(escolha));
             layouts[escolha].forEach(campo => {
-                if (campo.type === 'seccao') {
-                    const d = document.createElement('div'); d.className = 'seccao-divisor'; d.innerHTML = `<h3>${campo.label}</h3>`;
-                    container.appendChild(d); return;
-                }
                 const div = document.createElement('div');
                 div.innerHTML = `<label>${campo.label}</label>`;
-                if (campo.type === 'select') {
-                    const sel = document.createElement('select'); sel.id = 'input-'+campo.id;
-                    campo.options.forEach(o => sel.innerHTML += `<option value="${o}">${o}</option>`);
-                    div.appendChild(sel);
-                } else if (campo.type === 'checkboxes') {
-                    campo.options.forEach(o => div.innerHTML += `<label style="display:flex;align-items:center;"><input type="checkbox" name="${campo.id}" value="${o}" style="width:auto;margin-right:0.5rem;">${o}</label>`);
+                if(campo.type === 'select') {
+                    const s = document.createElement('select'); s.id = 'input-'+campo.id;
+                    campo.options.forEach(o => s.innerHTML += `<option value="${o}">${o}</option>`);
+                    div.appendChild(s);
                 } else {
-                    const inp = document.createElement('input'); inp.id = 'input-'+campo.id; inp.value = campo.valorFixo || ''; if(campo.readonly) inp.readOnly = true;
-                    div.appendChild(inp);
+                    const i = document.createElement('input'); i.id = 'input-'+campo.id; i.value = campo.valorFixo || ''; if(campo.readonly) i.readOnly = true;
+                    div.appendChild(i);
                 }
                 container.appendChild(div);
             });
         }
-
-        function calcularValores() {
-            const val = parseInt(document.getElementById('input-valor')?.value.replace(/\D/g,'') || 0);
+        
+        document.getElementById('campos-dinamicos').addEventListener('input', () => {
+            const val = parseInt(document.getElementById('input-valor')?.value.replace(/[^0-9]/g, '') || 0);
             const tipo = document.getElementById('input-solicitacao')?.value;
             const escolha = document.getElementById('select-template').value;
             let pA = 0.5, pJ = 0.5;
             if (escolha === "4") { pA = (tipo === "RENOVAÇÃO" ? 0.4 : 0.6); pJ = 1 - pA; }
-            document.getElementById('input-valor_adv').value = Math.round(val * pA).toLocaleString('pt-PT');
-            document.getElementById('input-valor_jur').value = Math.round(val * pJ).toLocaleString('pt-PT');
-        }
-
-        function processarImagem(e) {
-            Tesseract.recognize(e.target.files[0], 'por+eng').then(res => {
-                let m = 0; res.data.text.replace(/(\d+)\s*(?:M|mes)/gi, (_, n) => m += parseInt(n));
-                document.getElementById('input-pena_atual').value = m + 'M';
-            });
-        }
+            if(document.getElementById('input-valor_adv')) document.getElementById('input-valor_adv').value = Math.round(val * pA).toLocaleString('pt-PT');
+            if(document.getElementById('input-valor_jur')) document.getElementById('input-valor_jur').value = Math.round(val * pJ).toLocaleString('pt-PT');
+        });
 
         function gerarTemplate() {
-            const txt = document.getElementById('output-template');
-            let res = `**Advogado:** ${document.getElementById('adv-nome').value}\n\n\`\`\`md\n`;
+            const adv = document.getElementById('adv-nome').value;
+            let res = `**Advogado:** ${adv}\n\n\`\`\`md\n`;
             document.querySelectorAll('input, select').forEach(el => {
                 if(el.id.startsWith('input-')) {
-                    const label = el.previousElementSibling?.innerText || el.name;
+                    const label = el.parentElement.querySelector('label').innerText;
                     res += `[${label.toUpperCase()}][${el.value}]\n`;
                 }
             });
-            txt.value = res + "\`\`\`";
+            document.getElementById('output-template').value = res + "\`\`\`";
         }
 
         async function enviarParaDiscord() {
             const template = document.getElementById('output-template').value;
             if(!template) return alert('Gere o template primeiro!');
-            const payload = {
-                username: "Long Beach Justice Department",
-                embeds: [{
-                    title: "⚖️ Novo Protocolo",
-                    description: template,
-                    color: 3719160
-                }]
-            };
-            await fetch(webhookPadrao, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            document.getElementById('toast-copy').classList.add('show');
-            setTimeout(() => document.getElementById('toast-copy').classList.remove('show'), 3000);
+            await fetch(webhookPadrao, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ embeds: [{ description: template, color: 3719160 }] }) 
+            });
+            alert('Enviado!');
         }
 
-        function copiarTexto() {
-            document.getElementById('output-template').select();
-            document.execCommand('copy');
-            document.getElementById('toast-copy').classList.add('show');
-            setTimeout(() => document.getElementById('toast-copy').classList.remove('show'), 3000);
-        }
-
+        function copiarTexto() { document.getElementById('output-template').select(); document.execCommand('copy'); alert('Copiado!'); }
         alternarCampos();
     </script>
 </body>
