@@ -141,7 +141,7 @@
                     <div id="area-recorte-ficha" class="hidden">
                         <canvas id="preview-ficha"></canvas>
                         <div class="ajuda-recorte">
-                            A IA tentará identificar automaticamente a área da <b>FICHA CRIMINAL</b>. Se quiser corrigir, arraste no preview para selecionar somente a área onde ficam os crimes.
+                            Selecione manualmente apenas a tabela/lista azul da <b>FICHA CRIMINAL</b>, onde aparecem os crimes. Evite incluir nome, ID, telefone, menus ou dados pessoais.
                         </div>
                         <button type="button" class="btn-secundario" onclick="analisarAreaFichaSelecionada()">🔍 Analisar somente ficha criminal</button>
                         <button type="button" class="btn-secundario" onclick="limparSelecaoFicha()">↺ Usar recorte automático</button>
@@ -1466,98 +1466,124 @@
             return 1;
         }
 
-        function analisarFichaCriminal(textoOCR) {
-            const blocos = dividirLinhasOCR(textoOCR);
-            const textoCompleto = normalizarTexto(textoOCR);
-            const encontradosMap = new Map();
-
-            function adicionar(item, quantidade, confianca, origem, motivo) {
-                const chave = item.art;
-                const atual = encontradosMap.get(chave) || { ...item, quantidade: 0, confianca: 0, origens: [], motivos: [] };
-
-                // Evita duplicar demais quando o mesmo crime apareceu em linha e em bloco unido.
-                const origemCurta = origem.slice(0, 120);
-                if (!atual.origens.includes(origemCurta)) {
-                    atual.quantidade += quantidade;
-                    atual.origens.push(origemCurta);
-                    atual.motivos.push(motivo);
-                }
-
-                atual.confianca = Math.max(atual.confianca, confianca);
-                encontradosMap.set(chave, atual);
+        function linhaTemArtigo(linha, art) {
+            const a = normalizarTexto(art).replace(/\s+/g, "");
+            let padrao;
+            if (a.includes("-")) {
+                const [num, letra] = a.split("-");
+                padrao = new RegExp(`(^|\\s)(ART\\.?|ARTIGO)?\\s*${escaparRegex(num)}\\s*-?\\s*${escaparRegex(letra)}(\\s|$)`);
+            } else {
+                padrao = new RegExp(`(^|\\s)(ART\\.?|ARTIGO)?\\s*${escaparRegex(a)}(\\s|$)`);
             }
+            return padrao.test(linha);
+        }
 
-            blocos.forEach(bloco => {
+        function linhaTemCrimeExato(linha, item) {
+            const termos = montarPadroesCrime(item);
+            return termos.find(termo => {
+                if (termo.length < 4) return false;
+                const re = new RegExp(`(^|\\s)${escaparRegex(termo)}(\\s|$)`);
+                return re.test(linha);
+            }) || "";
+        }
+
+        function linhaPareceRegistroCriminal(linha) {
+            return (
+                /\b(ART|ARTIGO)\b/.test(linha) ||
+                /\b\d{1,2}\s*X\b/.test(linha) ||
+                /\bX\s*\d{1,2}\b/.test(linha) ||
+                /\b(MESES|MES|M)\b/.test(linha)
+            );
+        }
+
+        function extrairQuantidadeEstrita(linha) {
+            const padroes = [
+                /\b(\d{1,2})\s*X\b/,
+                /\bX\s*(\d{1,2})\b/,
+                /\b(?:QTD|QTDE|QUANTIDADE)\s*(\d{1,2})\b/
+            ];
+            for (const p of padroes) {
+                const m = linha.match(p);
+                if (m && m[1]) {
+                    const n = parseInt(m[1], 10);
+                    if (n > 0 && n <= 50) return n;
+                }
+            }
+            return 1;
+        }
+
+        function removerDuplicadosPorSobreposicao(encontrados) {
+            const porArt = new Map();
+            encontrados.forEach(item => {
+                const atual = porArt.get(item.art);
+                if (!atual) {
+                    porArt.set(item.art, item);
+                } else {
+                    atual.quantidade = Math.max(atual.quantidade, item.quantidade);
+                    atual.confianca = Math.max(atual.confianca, item.confianca);
+                    atual.origens = Array.from(new Set([...(atual.origens || []), ...(item.origens || [])]));
+                    atual.motivos = Array.from(new Set([...(atual.motivos || []), ...(item.motivos || [])]));
+                }
+            });
+
+            const lista = Array.from(porArt.values());
+            const arts = new Set(lista.map(i => i.art));
+            return lista.filter(item => {
+                if (!String(item.art).includes("-")) {
+                    return !Array.from(arts).some(a => String(a).startsWith(item.art + "-"));
+                }
+                return true;
+            });
+        }
+
+        function analisarFichaCriminal(textoOCR) {
+            const linhas = (textoOCR || "")
+                .split(/\n|<br>|•|;/gi)
+                .map(normalizarTexto)
+                .filter(l => l.length > 0);
+
+            const candidatos = [];
+
+            linhas.forEach(linha => {
+                if (!linhaPareceRegistroCriminal(linha)) return;
+
                 baseCrimesLongBeach.forEach(item => {
-                    const termos = montarPadroesCrime(item);
-                    let melhor = { score: 0, termo: "", motivo: "" };
+                    const artigoAchado = linhaTemArtigo(linha, item.art);
+                    const termoAchado = linhaTemCrimeExato(linha, item);
 
-                    const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artigoFlexivel(item.art)}\\b`);
-                    if (reArt.test(bloco)) {
-                        melhor = { score: 0.98, termo: normalizarTexto(item.art), motivo: "ARTIGO IDENTIFICADO" };
-                    }
+                    if (!artigoAchado && !termoAchado) return;
 
-                    for (const termo of termos) {
-                        let score = similaridadeTexto(bloco, termo);
-                        if (score > melhor.score) {
-                            melhor = { score, termo, motivo: bloco.includes(termo) ? "PALAVRA-CHAVE EXATA" : "ANÁLISE INTELIGENTE/FUZZY" };
-                        }
-                    }
+                    const qtd = extrairQuantidadeEstrita(linha);
+                    const confianca = artigoAchado && termoAchado ? 0.98 : artigoAchado ? 0.92 : 0.86;
 
-                    // Gatilhos especiais para evitar confusão entre roubo normal e assaltos específicos.
-                    if (normalizarTexto(item.crime).startsWith("ASSALTO") && !bloco.includes("ASSALTO")) {
-                        melhor.score = Math.min(melhor.score, 0.55);
-                    }
-                    if (item.art === "63" && /ASSALTO|JOALHERIA|BANCO|FLEECA|PALETO|COMEDY|MERGULHADOR|AMMUNITION|BARBEARIA|RESIDENCIA/.test(bloco)) {
-                        melhor.score = Math.min(melhor.score, 0.50);
-                    }
-
-                    if (melhor.score >= 0.62) {
-                        const qtd = extrairQuantidadeDaLinha(bloco, melhor.termo, item.art);
-                        adicionar(item, qtd, melhor.score, bloco, melhor.motivo);
-                    }
+                    candidatos.push({
+                        ...item,
+                        quantidade: qtd,
+                        confianca,
+                        origens: [linha],
+                        motivos: [artigoAchado ? "ARTIGO EXPLÍCITO NA FICHA" : "NOME EXATO DO CRIME NA FICHA"]
+                    });
                 });
             });
 
-            // Varredura extra por artigo/nome no texto completo.
-            baseCrimesLongBeach.forEach(item => {
-                if (encontradosMap.has(item.art)) return;
+            const semDuplicados = removerDuplicadosPorSobreposicao(candidatos);
 
-                const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${artigoFlexivel(item.art)}\\b`, "g");
-                const artMatches = textoCompleto.match(reArt);
-                if (artMatches && artMatches.length > 0) {
-                    adicionar(item, artMatches.length, 0.82, `ARTIGO LOCALIZADO NO TEXTO: ${item.art}`, "ARTIGO NO TEXTO COMPLETO");
-                    return;
-                }
-
-                for (const termo of montarPadroesCrime(item)) {
-                    const re = new RegExp(`(^|\\s)${escaparRegex(termo)}($|\\s)`, "g");
-                    const matches = textoCompleto.match(re);
-                    if (matches && matches.length > 0) {
-                        adicionar(item, matches.length, 0.78, `CRIME LOCALIZADO NO TEXTO: ${termo}`, "PALAVRA-CHAVE NO TEXTO COMPLETO");
-                        break;
-                    }
-                }
+            const encontrados = semDuplicados.map(item => ({
+                ...item,
+                subtotal: item.quantidade * item.pena,
+                confiancaTexto: item.confianca >= 0.95 ? "ALTA" : item.confianca >= 0.88 ? "MÉDIA" : "BAIXA",
+                motivoTexto: Array.from(new Set(item.motivos || [])).join(" / ")
+            })).sort((a, b) => {
+                const na = parseInt(String(a.art).match(/\d+/)?.[0] || "0", 10);
+                const nb = parseInt(String(b.art).match(/\d+/)?.[0] || "0", 10);
+                if (na !== nb) return na - nb;
+                return String(a.art).localeCompare(String(b.art));
             });
-
-            const encontrados = Array.from(encontradosMap.values())
-                .map(item => ({
-                    ...item,
-                    subtotal: item.quantidade * item.pena,
-                    confiancaTexto: item.confianca >= 0.90 ? "ALTA" : item.confianca >= 0.78 ? "MÉDIA" : "BAIXA",
-                    motivoTexto: Array.from(new Set(item.motivos)).join(" / ")
-                }))
-                .sort((a, b) => {
-                    const na = parseInt(String(a.art).match(/\d+/)?.[0] || "0", 10);
-                    const nb = parseInt(String(b.art).match(/\d+/)?.[0] || "0", 10);
-                    if (na !== nb) return na - nb;
-                    return String(a.art).localeCompare(String(b.art));
-                });
 
             const totalBruto = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
             const totalMeses = Math.min(totalBruto, 800);
 
-            return { totalMeses, totalBruto, encontrados, textoOCR: textoCompleto };
+            return { totalMeses, totalBruto, encontrados };
         }
 
         let imagemFichaOriginal = null;
@@ -1607,8 +1633,8 @@
         function detectarAreaFichaCriminal(img) {
             // Busca visual aproximada: geralmente a ficha criminal é um painel/tabela mais central.
             // O recorte padrão remove menus, bordas e áreas externas para evitar textos fora da ficha.
-            const margemX = Math.round(img.width * 0.08);
-            const margemY = Math.round(img.height * 0.10);
+            const margemX = Math.round(img.width * 0.10);
+            const margemY = Math.round(img.height * 0.28);
             return {
                 x: margemX,
                 y: margemY,
@@ -1740,39 +1766,19 @@
             const linhas = (textoOCR || "").split(/\n/).map(l => l.trim()).filter(Boolean);
             const normalizadas = linhas.map(normalizarTexto);
 
-            const inicioIdx = normalizadas.findIndex(l =>
-                l.includes("FICHA CRIMINAL") ||
-                l.includes("CRIMES") ||
-                l.includes("ARTIGO") ||
-                l.includes("PENA") ||
-                l.includes("INFRAÇÕES") ||
-                l.includes("INFRACOES")
-            );
-
-            const termosFim = [
-                "HISTORICO", "OBSERVACOES", "OBSERVACAO", "MULTA TOTAL",
-                "ADVOGADO", "OFICIAL", "ASSINATURA", "REGISTRO", "DADOS DO CIDADAO"
-            ];
-
-            let fimIdx = linhas.length;
-            for (let i = Math.max(0, inicioIdx + 1); i < normalizadas.length; i++) {
-                if (termosFim.some(t => normalizadas[i].includes(t))) {
-                    fimIdx = i;
-                    break;
-                }
-            }
-
-            if (inicioIdx >= 0) {
-                return linhas.slice(inicioIdx, fimIdx).join("\n");
-            }
-
-            // Se o OCR não achou o título, usa o texto do recorte, mas remove linhas claramente fora de crime.
-            return linhas.filter((linha, i) => {
+            const linhasCrime = linhas.filter((linha, i) => {
                 const l = normalizadas[i];
-                if (l.includes("NOME") || l.includes("PASSAPORTE") || l.includes("TELEFONE") || l.includes("RG")) return false;
-                if (l.includes("ENDERECO") || l.includes("EMPREGO") || l.includes("BANCO")) return false;
-                return true;
-            }).join("\n");
+                if (!l) return false;
+
+                if (/(NOME|PASSAPORTE|TELEFONE|RG|IDADE|NACIONALIDADE|SEXO|ENDERECO|EMPREGO|REGISTRO|OBSERVACAO|HISTORICO|CIDADE|DINHEIRO|BANCO:)/.test(l)) return false;
+
+                const temFormatoCrime = /\b(ART|ARTIGO)\b/.test(l) || /\b\d{1,2}\s*X\b/.test(l) || /\bX\s*\d{1,2}\b/.test(l) || /\b(MESES|MES|M)\b/.test(l);
+                const temCrimeExato = baseCrimesLongBeach.some(item => linhaTemCrimeExato(l, item));
+
+                return temFormatoCrime || temCrimeExato;
+            });
+
+            return linhasCrime.join("\n");
         }
 
         async function analisarAreaFichaSelecionada() {
