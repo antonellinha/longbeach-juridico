@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
@@ -596,6 +595,10 @@
             }
 
             resultado += `\n\`\`\``;
+
+            // CONVERTE TODO O TEMPLATE PARA CAIXA ALTA
+            resultado = resultado.toUpperCase();
+
             document.getElementById('output-template').value = resultado;
         }
 
