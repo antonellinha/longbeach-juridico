@@ -463,59 +463,60 @@
 
 
         // BASE DO CÓDIGO PENAL LONG BEACH 2026 PARA ANÁLISE DA FICHA
+        // MELHORIA: ANALISA ARTIGO, NOME DO CRIME, PALAVRAS-CHAVE, VARIAÇÕES DO OCR E QUANTIDADE DE VEZES COMETIDA.
         const baseCrimesLongBeach = [
-            { art: "1", crime: "OCULTAÇÃO DE FACE", pena: 5 },
-            { art: "2", crime: "ATENTADO AO PUDOR / ATO OBSCENO", pena: 30 },
-            { art: "3", crime: "CORRIDAS ILEGAIS", pena: 30 },
-            { art: "4", crime: "PERTURBAÇÃO DA PAZ", pena: 25 },
-            { art: "5", crime: "EXERCÍCIO ILEGAL DA PROFISSÃO", pena: 20 },
-            { art: "6", crime: "FALSIDADE IDEOLÓGICA", pena: 20 },
-            { art: "7", crime: "INCITAÇÃO", pena: 20 },
-            { art: "8", crime: "DÍVIDAS", pena: 40 },
-            { art: "10", crime: "UTILIZAÇÃO DE APARELHOS ELETRÔNICOS NO PRESÍDIO", pena: 20 },
-            { art: "11", crime: "DIFAMAÇÃO", pena: 15 },
-            { art: "13", crime: "CALÚNIA", pena: 20 },
-            { art: "14", crime: "AMEAÇA", pena: 20 },
-            { art: "15", crime: "OMISSÃO DE SOCORRO", pena: 30 },
-            { art: "16", crime: "LATROCÍNIO", pena: 80 },
-            { art: "17", crime: "LESÃO CORPORAL", pena: 20 },
-            { art: "18", crime: "STALKING", pena: 30 },
-            { art: "19", crime: "ABANDONO DE INCAPAZ", pena: 40 },
-            { art: "20", crime: "MAUS TRATOS", pena: 40 },
-            { art: "21", crime: "HOMICÍDIO CULPOSO", pena: 20 },
-            { art: "22", crime: "DENUNCIAÇÃO CALUNIOSA", pena: 30 },
-            { art: "23", crime: "HOMICÍDIO DOLOSO", pena: 30 },
-            { art: "23-A", crime: "ASSASSINATO LEVE", pena: 45 },
-            { art: "23-B", crime: "ASSASSINATO MÉDIO", pena: 55 },
-            { art: "23-C", crime: "ASSASSINATO PESADO", pena: 62 },
-            { art: "24", crime: "HOMICÍDIO QUALIFICADO", pena: 100 },
-            { art: "25", crime: "EXTERMÍNIO/MASSACRE", pena: 80 },
-            { art: "26", crime: "TERRORISMO", pena: 50 },
-            { art: "27", crime: "SEQUESTRO (CÁRCERE PRIVADO)", pena: 50 },
-            { art: "28", crime: "ORGANIZAÇÃO CRIMINOSA", pena: 60 },
-            { art: "29", crime: "TRÁFICO DE DROGAS", pena: 30 },
-            { art: "30", crime: "POSSE DE DROGAS ILEGAIS", pena: 20 },
-            { art: "31", crime: "TRÁFICO DE ARMAS E MUNIÇÕES", pena: 80 },
-            { art: "32", crime: "PORTE ILEGAL DE ARMA DE FOGO LEVE", pena: 10 },
-            { art: "33", crime: "PORTE ILEGAL DE ARMA DE FOGO MÉDIO", pena: 25 },
-            { art: "34", crime: "PORTE ILEGAL DE ARMA DE FOGO PESADO", pena: 35 },
-            { art: "35", crime: "PORTE ILEGAL DE MUNIÇÃO", pena: 30 },
-            { art: "42", crime: "LAVAGEM DE DINHEIRO", pena: 180 },
-            { art: "60", crime: "PLACA CLONADA", pena: 30 },
-            { art: "62", crime: "FURTO", pena: 30 },
-            { art: "63", crime: "ROUBO", pena: 35 },
-            { art: "64", crime: "RECEPTAÇÃO", pena: 20 },
-            { art: "65", crime: "INVASÃO DE PROPRIEDADE", pena: 20 },
-            { art: "87", crime: "PREVARICAÇÃO", pena: 60 },
-            { art: "88", crime: "CONCUSSÃO", pena: 45 },
-            { art: "89", crime: "CORRUPÇÃO PASSIVA", pena: 45 },
-            { art: "90", crime: "CORRUPÇÃO ATIVA / SUBORNO", pena: 50 },
-            { art: "91", crime: "DESACATO À AUTORIDADE", pena: 10 },
-            { art: "92", crime: "DESOBEDIÊNCIA À ORDEM LEGAL / RESISTÊNCIA À PRISÃO", pena: 20 },
-            { art: "93", crime: "TENTATIVA DE FUGA DE ABORDAGEM POLICIAL", pena: 20 },
-            { art: "94", crime: "FUGA DA PRISÃO", pena: 30 },
-            { art: "95", crime: "OBSTRUÇÃO DA JUSTIÇA", pena: 30 },
-            { art: "97", crime: "USURPAÇÃO DE FUNÇÃO PÚBLICA", pena: 35 }
+            { art: "1", crime: "OCULTAÇÃO DE FACE", pena: 5, palavras: ["OCULTACAO DE FACE", "MASCARA", "ROSTO COBERTO", "FACE COBERTA", "OCULTAR FACE"] },
+            { art: "2", crime: "ATENTADO AO PUDOR / ATO OBSCENO", pena: 30, palavras: ["ATENTADO AO PUDOR", "ATO OBSCENO", "OBSCENO", "PUDOR"] },
+            { art: "3", crime: "CORRIDAS ILEGAIS", pena: 30, palavras: ["CORRIDA ILEGAL", "CORRIDAS ILEGAIS", "RACHA", "RACHAS"] },
+            { art: "4", crime: "PERTURBAÇÃO DA PAZ", pena: 25, palavras: ["PERTURBACAO DA PAZ", "PERTURBAR A PAZ", "PERTURBACAO"] },
+            { art: "5", crime: "EXERCÍCIO ILEGAL DA PROFISSÃO", pena: 20, palavras: ["EXERCICIO ILEGAL", "EXERCICIO ILEGAL DA PROFISSAO", "FALSO MEDICO", "FALSO POLICIAL"] },
+            { art: "6", crime: "FALSIDADE IDEOLÓGICA", pena: 20, palavras: ["FALSIDADE IDEOLOGICA", "IDENTIDADE FALSA", "NOME FALSO"] },
+            { art: "7", crime: "INCITAÇÃO", pena: 20, palavras: ["INCITACAO", "INCITAR", "INCITANDO"] },
+            { art: "8", crime: "DÍVIDAS", pena: 40, palavras: ["DIVIDA", "DIVIDAS", "INADIMPLENCIA"] },
+            { art: "10", crime: "UTILIZAÇÃO DE APARELHOS ELETRÔNICOS NO PRESÍDIO", pena: 20, palavras: ["APARELHO ELETRONICO", "CELULAR NO PRESIDIO", "ELETRONICOS NO PRESIDIO", "TABLET NO PRESIDIO"] },
+            { art: "11", crime: "DIFAMAÇÃO", pena: 15, palavras: ["DIFAMACAO", "DIFAMAR"] },
+            { art: "13", crime: "CALÚNIA", pena: 20, palavras: ["CALUNIA", "CALUNIAR"] },
+            { art: "14", crime: "AMEAÇA", pena: 20, palavras: ["AMEACA", "AMEACAR"] },
+            { art: "15", crime: "OMISSÃO DE SOCORRO", pena: 30, palavras: ["OMISSAO DE SOCORRO", "OMITIU SOCORRO", "NAO PRESTOU SOCORRO"] },
+            { art: "16", crime: "LATROCÍNIO", pena: 80, palavras: ["LATROCINIO", "ROUBO SEGUIDO DE MORTE"] },
+            { art: "17", crime: "LESÃO CORPORAL", pena: 20, palavras: ["LESAO CORPORAL", "AGRESSAO", "AGREDIU"] },
+            { art: "18", crime: "STALKING", pena: 30, palavras: ["STALKING", "PERSEGUICAO", "PERSEGUIR"] },
+            { art: "19", crime: "ABANDONO DE INCAPAZ", pena: 40, palavras: ["ABANDONO DE INCAPAZ", "ABANDONOU INCAPAZ"] },
+            { art: "20", crime: "MAUS TRATOS", pena: 40, palavras: ["MAUS TRATOS", "MAU TRATO", "MALTRATO", "MAL TRATO"] },
+            { art: "21", crime: "HOMICÍDIO CULPOSO", pena: 20, palavras: ["HOMICIDIO CULPOSO"] },
+            { art: "22", crime: "DENUNCIAÇÃO CALUNIOSA", pena: 30, palavras: ["DENUNCIACAO CALUNIOSA", "DENUNCIA FALSA"] },
+            { art: "23", crime: "HOMICÍDIO DOLOSO", pena: 30, palavras: ["HOMICIDIO DOLOSO"] },
+            { art: "23-A", crime: "ASSASSINATO LEVE", pena: 45, palavras: ["ASSASSINATO LEVE", "ASSASSINATO L"] },
+            { art: "23-B", crime: "ASSASSINATO MÉDIO", pena: 55, palavras: ["ASSASSINATO MEDIO", "ASSASSINATO M"] },
+            { art: "23-C", crime: "ASSASSINATO PESADO", pena: 62, palavras: ["ASSASSINATO PESADO", "ASSASSINATO P"] },
+            { art: "24", crime: "HOMICÍDIO QUALIFICADO", pena: 100, palavras: ["HOMICIDIO QUALIFICADO"] },
+            { art: "25", crime: "EXTERMÍNIO/MASSACRE", pena: 80, palavras: ["EXTERMINIO", "MASSACRE"] },
+            { art: "26", crime: "TERRORISMO", pena: 50, palavras: ["TERRORISMO", "TERRORISTA"] },
+            { art: "27", crime: "SEQUESTRO (CÁRCERE PRIVADO)", pena: 50, palavras: ["SEQUESTRO", "CARCERE PRIVADO", "CATIVEIRO"] },
+            { art: "28", crime: "ORGANIZAÇÃO CRIMINOSA", pena: 60, palavras: ["ORGANIZACAO CRIMINOSA", "ORG CRIMINOSA", "FACCAO"] },
+            { art: "29", crime: "TRÁFICO DE DROGAS", pena: 30, palavras: ["TRAFICO DE DROGAS", "TRAFICO", "VENDA DE DROGAS"] },
+            { art: "30", crime: "POSSE DE DROGAS ILEGAIS", pena: 20, palavras: ["POSSE DE DROGAS", "DROGAS ILEGAIS", "PORTE DE DROGAS"] },
+            { art: "31", crime: "TRÁFICO DE ARMAS E MUNIÇÕES", pena: 80, palavras: ["TRAFICO DE ARMAS", "TRAFICO DE MUNICOES", "VENDA DE ARMAS"] },
+            { art: "32", crime: "PORTE ILEGAL DE ARMA DE FOGO LEVE", pena: 10, palavras: ["PORTE ILEGAL DE ARMA LEVE", "ARMA DE FOGO LEVE", "PORTE ARMA LEVE"] },
+            { art: "33", crime: "PORTE ILEGAL DE ARMA DE FOGO MÉDIO", pena: 25, palavras: ["PORTE ILEGAL DE ARMA MEDIO", "PORTE ILEGAL DE ARMA MEDIA", "ARMA DE FOGO MEDIO", "ARMA DE FOGO MEDIA", "PORTE ARMA MEDIA"] },
+            { art: "34", crime: "PORTE ILEGAL DE ARMA DE FOGO PESADO", pena: 35, palavras: ["PORTE ILEGAL DE ARMA PESADO", "PORTE ILEGAL DE ARMA PESADA", "ARMA DE FOGO PESADO", "ARMA DE FOGO PESADA", "PORTE ARMA PESADA"] },
+            { art: "35", crime: "PORTE ILEGAL DE MUNIÇÃO", pena: 30, palavras: ["PORTE ILEGAL DE MUNICAO", "MUNICAO ILEGAL", "POSSE DE MUNICAO"] },
+            { art: "42", crime: "LAVAGEM DE DINHEIRO", pena: 180, palavras: ["LAVAGEM DE DINHEIRO", "DINHEIRO SUJO"] },
+            { art: "60", crime: "PLACA CLONADA", pena: 30, palavras: ["PLACA CLONADA", "CLONAGEM DE PLACA"] },
+            { art: "62", crime: "FURTO", pena: 30, palavras: ["FURTO", "FURTAR"] },
+            { art: "63", crime: "ROUBO", pena: 35, palavras: ["ROUBO", "ROUBAR", "ASSALTO"] },
+            { art: "64", crime: "RECEPTAÇÃO", pena: 20, palavras: ["RECEPTACAO", "RECEPTAR"] },
+            { art: "65", crime: "INVASÃO DE PROPRIEDADE", pena: 20, palavras: ["INVASAO DE PROPRIEDADE", "INVADIR PROPRIEDADE", "INVASAO"] },
+            { art: "87", crime: "PREVARICAÇÃO", pena: 60, palavras: ["PREVARICACAO", "PREVARICAR"] },
+            { art: "88", crime: "CONCUSSÃO", pena: 45, palavras: ["CONCUSSAO"] },
+            { art: "89", crime: "CORRUPÇÃO PASSIVA", pena: 45, palavras: ["CORRUPCAO PASSIVA"] },
+            { art: "90", crime: "CORRUPÇÃO ATIVA / SUBORNO", pena: 50, palavras: ["CORRUPCAO ATIVA", "SUBORNO", "PROPINA"] },
+            { art: "91", crime: "DESACATO À AUTORIDADE", pena: 10, palavras: ["DESACATO", "DESACATO A AUTORIDADE"] },
+            { art: "92", crime: "DESOBEDIÊNCIA À ORDEM LEGAL / RESISTÊNCIA À PRISÃO", pena: 20, palavras: ["DESOBEDIENCIA", "ORDEM LEGAL", "RESISTENCIA A PRISAO", "RESISTENCIA"] },
+            { art: "93", crime: "TENTATIVA DE FUGA DE ABORDAGEM POLICIAL", pena: 20, palavras: ["TENTATIVA DE FUGA", "FUGA DE ABORDAGEM", "FUGA DA ABORDAGEM"] },
+            { art: "94", crime: "FUGA DA PRISÃO", pena: 30, palavras: ["FUGA DA PRISAO", "FUGIU DA PRISAO"] },
+            { art: "95", crime: "OBSTRUÇÃO DA JUSTIÇA", pena: 30, palavras: ["OBSTRUCAO DA JUSTICA", "OBSTRUIR JUSTICA"] },
+            { art: "97", crime: "USURPAÇÃO DE FUNÇÃO PÚBLICA", pena: 35, palavras: ["USURPACAO DE FUNCAO PUBLICA", "USURPACAO", "FUNCAO PUBLICA"] }
         ];
 
         function normalizarTexto(str) {
@@ -523,7 +524,7 @@
                 .toUpperCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[|]/g, " ")
+                .replace(/[|()[\]{}:;,.]/g, " ")
                 .replace(/[^A-Z0-9\s\-\/]/g, " ")
                 .replace(/\s+/g, " ")
                 .trim();
@@ -533,40 +534,135 @@
             return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         }
 
-        function contarOcorrencias(texto, termo) {
-            const re = new RegExp(`(^|\\s)${escaparRegex(termo)}($|\\s)`, "g");
-            return (texto.match(re) || []).length;
+        function montarPadroesCrime(item) {
+            const termos = new Set([item.crime, ...(item.palavras || [])]);
+            item.crime.split("/").forEach(p => termos.add(p));
+            const normalizados = Array.from(termos)
+                .map(normalizarTexto)
+                .filter(t => t.length >= 4)
+                .sort((a, b) => b.length - a.length);
+            return normalizados;
+        }
+
+        function extrairQuantidadeDaLinha(linha, termo, art) {
+            // Procura quantidade próxima da linha: "2x ROUBO", "ROUBO x2", "ROUBO 2", "QTD 2", "2 ROUBO"
+            const termoEsc = escaparRegex(termo);
+            const artEsc = escaparRegex(normalizarTexto(art));
+
+            const padroes = [
+                new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*(?:ART\\.?\\s*)?${artEsc}(?:\\s|$)`),
+                new RegExp(`(?:ART\\.?\\s*)?${artEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`),
+                new RegExp(`(?:^|\\s)(\\d{1,2})\\s*(?:X|VEZES|QTD|QTDE)?\\s*${termoEsc}(?:\\s|$)`),
+                new RegExp(`${termoEsc}\\s*(?:X|VEZES|QTD|QTDE)?\\s*(\\d{1,2})(?:\\s|$)`)
+            ];
+
+            for (const padrao of padroes) {
+                const m = linha.match(padrao);
+                if (m && m[1]) {
+                    const n = parseInt(m[1], 10);
+                    if (n > 0 && n <= 50) return n;
+                }
+            }
+            return 1;
+        }
+
+        function dividirLinhasOCR(textoOCR) {
+            return (textoOCR || "")
+                .split(/\n|<br>|•|;/gi)
+                .map(normalizarTexto)
+                .filter(l => l.length > 0);
+        }
+
+        function calcularSimilaridade(a, b) {
+            // Similaridade simples por palavras em comum para ajudar quando o OCR falhar um pouco.
+            const wa = new Set(normalizarTexto(a).split(" ").filter(w => w.length > 2));
+            const wb = new Set(normalizarTexto(b).split(" ").filter(w => w.length > 2));
+            if (!wa.size || !wb.size) return 0;
+            let inter = 0;
+            wa.forEach(w => { if (wb.has(w)) inter++; });
+            return inter / Math.max(wa.size, wb.size);
         }
 
         function analisarFichaCriminal(textoOCR) {
-            const textoNormalizado = normalizarTexto(textoOCR);
-            const encontrados = [];
+            const linhas = dividirLinhasOCR(textoOCR);
+            const textoCompleto = normalizarTexto(textoOCR);
+            const encontradosMap = new Map();
 
+            function adicionar(item, quantidade, confianca, origem) {
+                const chave = item.art;
+                const atual = encontradosMap.get(chave) || { ...item, quantidade: 0, confianca: 0, origens: [] };
+                atual.quantidade += quantidade;
+                atual.confianca = Math.max(atual.confianca, confianca);
+                atual.origens.push(origem);
+                encontradosMap.set(chave, atual);
+            }
+
+            // 1) Busca por linha, com quantidade próxima ao crime.
+            linhas.forEach(linha => {
+                baseCrimesLongBeach.forEach(item => {
+                    const termos = montarPadroesCrime(item);
+                    const art = normalizarTexto(item.art);
+
+                    let achou = false;
+                    let termoAchado = "";
+
+                    // Artigo explícito: ART. 63, ARTIGO 63, 63 - ROUBO.
+                    const reArt = new RegExp(`(?:ART\\.?|ARTIGO)?\\s*${escaparRegex(art)}\\b`);
+                    if (reArt.test(linha)) {
+                        achou = true;
+                        termoAchado = art;
+                    }
+
+                    // Nome/palavra-chave.
+                    if (!achou) {
+                        for (const termo of termos) {
+                            if (linha.includes(termo)) {
+                                achou = true;
+                                termoAchado = termo;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Similaridade para OCR imperfeito, somente se a linha for parecida.
+                    if (!achou) {
+                        const melhor = termos.map(t => ({ termo: t, score: calcularSimilaridade(linha, t) }))
+                                            .sort((a, b) => b.score - a.score)[0];
+                        if (melhor && melhor.score >= 0.60) {
+                            achou = true;
+                            termoAchado = melhor.termo;
+                        }
+                    }
+
+                    if (achou) {
+                        const qtd = extrairQuantidadeDaLinha(linha, termoAchado, art);
+                        adicionar(item, qtd, termoAchado === art ? 0.95 : 0.85, linha);
+                    }
+                });
+            });
+
+            // 2) Busca geral no texto para crimes que apareceram fora de linhas organizadas.
             baseCrimesLongBeach.forEach(item => {
-                const crimeNormalizado = normalizarTexto(item.crime);
-                const artNormalizado = normalizarTexto(item.art);
+                if (encontradosMap.has(item.art)) return;
 
-                const regexArtigo = new RegExp(`\\b(ART\\.?|ARTIGO)?\\s*${escaparRegex(artNormalizado)}\\b`, "g");
-                const qtdPorArtigo = (textoNormalizado.match(regexArtigo) || []).length;
-
-                let qtdPorNome = contarOcorrencias(textoNormalizado, crimeNormalizado);
-
-                // Para crimes com barra, também tenta localizar qualquer uma das partes.
-                if (item.crime.includes("/") && qtdPorNome === 0) {
-                    const partes = item.crime.split("/").map(p => normalizarTexto(p)).filter(p => p.length > 3);
-                    qtdPorNome = Math.max(...partes.map(p => contarOcorrencias(textoNormalizado, p)), 0);
-                }
-
-                const quantidade = Math.max(qtdPorArtigo, qtdPorNome);
-
-                if (quantidade > 0) {
-                    encontrados.push({
-                        ...item,
-                        quantidade,
-                        subtotal: quantidade * item.pena
-                    });
+                const termos = montarPadroesCrime(item);
+                for (const termo of termos) {
+                    const re = new RegExp(`(^|\\s)${escaparRegex(termo)}($|\\s)`, "g");
+                    const matches = textoCompleto.match(re);
+                    if (matches && matches.length > 0) {
+                        adicionar(item, matches.length, 0.75, `LOCALIZADO NO TEXTO: ${termo}`);
+                        break;
+                    }
                 }
             });
+
+            const encontrados = Array.from(encontradosMap.values())
+                .map(item => ({
+                    ...item,
+                    subtotal: item.quantidade * item.pena,
+                    confiancaTexto: item.confianca >= 0.90 ? "ALTA" : item.confianca >= 0.80 ? "MÉDIA" : "BAIXA"
+                }))
+                .sort((a, b) => Number(String(a.art).replace(/\D/g, "")) - Number(String(b.art).replace(/\D/g, "")));
 
             const totalMeses = encontrados.reduce((soma, item) => soma + item.subtotal, 0);
             return { totalMeses, encontrados };
@@ -586,7 +682,7 @@
             Tesseract.recognize(file, 'por+eng').then(({ data: { text } }) => {
                 const analise = analisarFichaCriminal(text);
 
-                statusDiv.innerText = `✅ ANÁLISE FINALIZADA! TOTAL DETECTADO: ${analise.totalMeses}M`;
+                statusDiv.innerText = `✅ ANÁLISE FINALIZADA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL DETECTADO: ${analise.totalMeses}M`;
 
                 const penaInput = document.getElementById('input-pena_atual');
                 if (penaInput) {
@@ -598,7 +694,7 @@
                         resultadoCrimes.innerText = "NENHUM CRIME DA BASE FOI IDENTIFICADO COM SEGURANÇA. VERIFIQUE SE A IMAGEM ESTÁ NÍTIDA.";
                     } else {
                         resultadoCrimes.innerText = analise.encontrados
-                            .map(item => `${item.quantidade}X - ART. ${item.art} — ${item.crime} = ${item.subtotal}M`)
+                            .map(item => `${item.quantidade}X - ART. ${item.art} — ${item.crime} | PENA: ${item.pena}M CADA | SUBTOTAL: ${item.subtotal}M | CONFIANÇA: ${item.confiancaTexto}`)
                             .join("\n");
                     }
                 }
