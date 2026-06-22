@@ -131,7 +131,7 @@
                 <!-- INTELIGÊNCIA ARTIFICIAL / OCR (Ativo para Limpeza de Ficha e Troca de Nome c/ ficha suja) -->
                 <div id="area-ocr" class="card hidden">
                     <h2 style="color: #eab308;">🔍 Análise Inteligente de Ficha</h2>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local identificará automaticamente a área da ficha, fará OCR somente nela e somará os crimes pelo Código Penal 2026.</p>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Carregue a captura de ecrã da ficha criminal. A IA local fará OCR na imagem inteira e somará somente os crimes encontrados pelo Código Penal 2026.</p>
                     <label class="btn-upload">
                         Escolher Ficheiro
                         <input type="file" id="foto-crimes" accept="image/*" class="hidden" onchange="prepararImagemFicha(event)">
@@ -141,7 +141,7 @@
                     <div id="area-recorte-ficha" class="hidden">
                         <canvas id="preview-ficha"></canvas>
                         <div class="ajuda-recorte">
-                            A IA identifica automaticamente a área da <b>FICHA CRIMINAL</b> e analisa somente os crimes dentro dela.
+                            A IA fará a leitura da <b>IMAGEM INTEIRA</b> e considerará apenas linhas que pareçam crimes/artigos da ficha criminal.
                         </div>
                     </div>
 
@@ -1611,7 +1611,7 @@
             if (!file) return;
 
             nomeArquivo.innerText = file.name;
-            statusDiv.innerText = "🔄 CARREGANDO IMAGEM E PROCURANDO A ÁREA DA FICHA CRIMINAL...";
+            statusDiv.innerText = "🔄 CARREGANDO IMAGEM INTEIRA PARA ANÁLISE...";
             if (resultadoCrimes) resultadoCrimes.innerText = "";
             if (debugOCR) {
                 debugOCR.innerText = "";
@@ -1625,21 +1625,19 @@
             desenharPreviewFicha();
             areaRecorte.classList.remove("hidden");
 
-            statusDiv.innerText = "✅ ÁREA DA FICHA CRIMINAL IDENTIFICADA. INICIANDO ANÁLISE AUTOMÁTICA...";
+            statusDiv.innerText = "✅ IMAGEM CARREGADA. INICIANDO ANÁLISE AUTOMÁTICA DA IMAGEM INTEIRA...";
             await analisarAreaFichaSelecionada();
         }
 
         function detectarAreaFichaCriminal(img) {
-            // Busca visual aproximada: geralmente a ficha criminal é um painel/tabela mais central.
-            // O recorte padrão remove menus, bordas e áreas externas para evitar textos fora da ficha.
-            const margemX = Math.round(img.width * 0.10);
-            const margemY = Math.round(img.height * 0.28);
+            // Agora a análise usa a imagem inteira, sem recorte pequeno.
             return {
-                x: margemX,
-                y: margemY,
-                w: img.width - margemX * 2,
-                h: img.height - margemY * 2
+                x: 0,
+                y: 0,
+                w: img.width,
+                h: img.height
             };
+        };
         }
 
         function desenharPreviewFicha() {
@@ -1749,7 +1747,7 @@
             try {
                 const area = recorteAutomaticoFicha || detectarAreaFichaCriminal(imagemFichaOriginal);
 
-                statusDiv.innerText = "🔄 IA LOCAL LENDO APENAS A ÁREA IDENTIFICADA COMO FICHA CRIMINAL...";
+                statusDiv.innerText = "🔄 IA LOCAL LENDO A IMAGEM INTEIRA E FILTRANDO APENAS LINHAS DE CRIMES...";
                 if (resultadoCrimes) resultadoCrimes.innerText = "";
                 if (debugOCR) {
                     debugOCR.innerText = "";
@@ -1766,7 +1764,7 @@
                 const textoFicha = filtrarTextoSomenteFichaCriminal(text);
                 const analise = analisarFichaCriminal(textoFicha);
 
-                statusDiv.innerText = `✅ ANÁLISE FINALIZADA SOMENTE NA FICHA CRIMINAL! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
+                statusDiv.innerText = `✅ ANÁLISE FINALIZADA NA IMAGEM INTEIRA! ${analise.encontrados.length} TIPO(S) DE CRIME IDENTIFICADO(S). TOTAL: ${analise.totalMeses}M`;
 
                 const penaInput = document.getElementById('input-pena_atual');
                 if (penaInput) {
@@ -1775,7 +1773,7 @@
 
                 if (resultadoCrimes) {
                     if (analise.encontrados.length === 0) {
-                        resultadoCrimes.innerText = "NENHUM CRIME FOI IDENTIFICADO DENTRO DA ÁREA DA FICHA CRIMINAL. SELECIONE MANUALMENTE APENAS A TABELA/LISTA DE CRIMES E TENTE NOVAMENTE.";
+                        resultadoCrimes.innerText = "NENHUM CRIME FOI IDENTIFICADO NA IMAGEM. TENTE ENVIAR UM PRINT MAIS NÍTIDO DA FICHA.";
                     } else {
                         const linhas = analise.encontrados.map(item =>
                             `${item.quantidade}X - ART. ${item.art} — ${item.crime} | PENA: ${item.pena}M CADA | SUBTOTAL: ${item.subtotal}M | CONFIANÇA: ${item.confiancaTexto} | ${item.motivoTexto}`
@@ -1791,7 +1789,7 @@
                 }
 
                 if (debugOCR) {
-                    debugOCR.innerText = "TEXTO LIDO APENAS DA ÁREA DA FICHA CRIMINAL:\n\n" + textoFicha;
+                    debugOCR.innerText = "TEXTO LIDO NA IMAGEM INTEIRA:\n\n" + textoFicha;
                     debugOCR.classList.remove("hidden");
                 }
             } catch (err) {
